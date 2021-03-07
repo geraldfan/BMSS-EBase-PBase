@@ -20,18 +20,25 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 def read():
     # read original data from microplate reader
-    file = 'cytation_H1_plate1.xlsx'
-    cellsId = ('D63', 'CU95')
-    timeCellsId = ('B63', 'B95')
-    protocolId = ('A60', 'A60')
-    temperatureCellsId = ('C63', 'C95')
+    file = 'cytation_H1_plate1_GFP.xlsx'
+    cellsId = ('C2', 'CT34')
+    timeCellsId = ('A2', 'A34')
+    temperatureCellsId = ('B2', 'B34')
+    settingsId = ('A2', 'F2')
+    identifierId = ('B2', 'B2')
     book = openpyxl.load_workbook(file)
-    sheet = book.active
+    data_sheet = 'Data'
+    settings_sheet = 'Settings'
 
-    protocol = get_protocol(protocolId, file)
-    cells = get_cells(file, cellsId)
-    timeCells = get_cells(file, timeCellsId)
-    temperatureCells = get_cells(file, temperatureCellsId)
+    settingsCells = get_cells(file, settingsId, settings_sheet)
+    cells = get_cells(file, cellsId, data_sheet)
+    timeCells = get_cells(file, timeCellsId, data_sheet)
+    temperatureCells = get_cells(file, temperatureCellsId, data_sheet)
+    identifier = get_identifier(identifierId, file, settings_sheet)
+
+    settings = []
+    settings = generate_nested_list(settings, settingsCells)
+    settings = append_to_nested_list(settings, settingsCells)
 
     values = []
     values = generate_nested_list(values, cells)
@@ -39,27 +46,27 @@ def read():
 
     formatted_cells = []
     formatted_cells = generate_nested_list(formatted_cells, cells)
-    formatted_cells = append_protocol_to_nested_list(formatted_cells, cells, protocol)
+    formatted_cells = append_identifier_to_nested_list(formatted_cells, cells, identifier)
     formatted_cells = append_time_to_nested_list(formatted_cells, timeCells)
     formatted_cells = append_to_nested_list(formatted_cells, temperatureCells)
     formatted_cells = append_values_to_nested_list(formatted_cells, values)
 
 
-    print(formatted_cells)
     add_to_database(formatted_cells)
+    add_to_settings(settings)
 
 
-def get_protocol(protocolId, file):
+def get_identifier(identifierId, file, sheet):
     book = openpyxl.load_workbook(file)
-    sheet = book.active
+    sheet = book[sheet]
 
-    cell = sheet[protocolId[0]:protocolId[1]]
+    cell = sheet[identifierId[0]:identifierId[1]]
     return cell[0][0].value
 
 
-def get_cells(file, cellsId):
+def get_cells(file, cellsId, sheet):
     book = openpyxl.load_workbook(file)
-    sheet = book.active
+    sheet = book[sheet]
 
     cells = sheet[cellsId[0]: cellsId[1]]
 
@@ -80,11 +87,13 @@ def append_to_nested_list(formatted_cells, cells):
 
     return formatted_cells
 
+
 def append_values_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells[i].append(str(cells[i]))
 
     return formatted_cells
+
 
 def append_time_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
@@ -94,12 +103,11 @@ def append_time_to_nested_list(formatted_cells, cells):
     return formatted_cells
 
 
-def append_protocol_to_nested_list(formatted_cells, cells, protocol):
+def append_identifier_to_nested_list(formatted_cells, cells, identifier):
     for i in range(len(cells)):
-        formatted_cells[i].append(protocol)
+        formatted_cells[i].append(identifier)
 
     return formatted_cells
-
 
 
 def add_to_database(cells):
@@ -107,15 +115,30 @@ def add_to_database(cells):
     create_table(db)
     connection = create_connection("EBase.db")
 
-
     connection.executemany("""
 
                            INSERT INTO
-                           data(protocol, time, set_temperature, data_values)
+                           data(identifier, time, set_temperature, data_values)
                            VALUES(?,?,?,?)""", cells)
 
     connection.commit()
     connection.close()
+
+
+def add_to_settings(cells):
+    db = "sqlite:///EBase.db"
+    create_table(db)
+    connection = create_connection("EBase.db")
+
+    connection.executemany("""
+
+                           INSERT INTO
+                           settings(protocol, identifier, experiment_type, temperature, media, equipment)
+                           VALUES(?,?,?,?,?,?)""", cells)
+
+    connection.commit()
+    connection.close()
+
 
 def create_connection(db_file):
     """ create a database connection to the SQLite database
@@ -140,12 +163,21 @@ def create_table(db):
 
     data = Table(
         'data', meta,
-        Column('protocol', String),
+        Column('identifier', String),
         Column('time', String),
-        Column('set_temperature', String, ),
-        Column('data_values', String, primary_key = True)
+        Column('set_temperature', String),
+        Column('data_values', String, primary_key=True)
     )
 
+    settings = Table(
+        'settings', meta,
+        Column('protocol', String),
+        Column('identifier', String, primary_key=True),
+        Column('experiment_type', String),
+        Column('Temperature', String),
+        Column('Media', String),
+        Column('Equipment', String)
+    )
     meta.create_all(engine)
 
 
