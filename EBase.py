@@ -18,9 +18,9 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read():
+def read(file):
     # read original data from microplate reader
-    file = 'cytation_H1_plate1_GFP.xlsx'
+    # file = 'cytation_H1_plate1_GFP.xlsx'
     cellsId = ('C2', 'CT34')
     timeCellsId = ('A2', 'A34')
     temperatureCellsId = ('B2', 'B34')

@@ -11,14 +11,14 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read():
+def read(file, lastRow):
     # read original data from microplate reader
-    file = 'E6-04_plasmid_list.xlsx'
+    # file = 'E6-04_plasmid_list.xlsx'
 
-    nameCellsId = ('A3', 'A62')
-    plasmidOriginId = ('C3', 'C62')
-    restOriginId = ('P3', 'R62')
-    setInfoId = ('D3', 'O62')
+    nameCellsId = ('A3', get_lastRowId('A', lastRow))
+    plasmidOriginId = ('C3', get_lastRowId('C', lastRow))
+    restOriginId = ('P3', get_lastRowId('R', lastRow))
+    setInfoId = ('D3', get_lastRowId('O', lastRow))
 
     nameCells = get_cells(file, nameCellsId)
     plasmidOriginCells = get_cells(file, plasmidOriginId)
@@ -41,6 +41,8 @@ def read():
     print(set_cells)
     add_to_database(formatted_cells, set_cells)
 
+def get_lastRowId(char, lastRow):
+    return str(char + lastRow)
 
 def get_cells(file, cellsId):
     book = openpyxl.load_workbook(file)
