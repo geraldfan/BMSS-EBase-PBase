@@ -25,21 +25,22 @@ def read(file, lastRow):
     restOriginCells = get_cells(file, restOriginId)
     setInfoCells = get_cells(file, setInfoId)
 
+    set_cells = []
+    set_cells = generate_nested_list(set_cells, nameCells)
+    set_cells = append_to_nested_list(set_cells, setInfoCells)
+
     formatted_cells = []
 
     formatted_cells = generate_nested_list(formatted_cells, nameCells)
 
     formatted_cells = append_to_nested_list(formatted_cells, nameCells)
     formatted_cells = append_to_nested_list(formatted_cells, plasmidOriginCells)
+    formatted_cells = append_set_to_nested_list(formatted_cells, set_cells)
     formatted_cells = append_to_nested_list(formatted_cells, restOriginCells)
 
-    set_cells = []
-    set_cells = generate_nested_list(set_cells, nameCells)
-    set_cells = append_to_nested_list(set_cells, nameCells)
-    set_cells = append_to_nested_list(set_cells, setInfoCells)
 
-    print(set_cells)
-    add_to_database(formatted_cells, set_cells)
+    print(formatted_cells)
+    add_to_database(formatted_cells)
 
 def get_lastRowId(char, lastRow):
     return str(char + lastRow)
@@ -68,7 +69,13 @@ def append_to_nested_list(formatted_cells, cells):
     return formatted_cells
 
 
-def add_to_database(cells, set_cells):
+def append_set_to_nested_list(formatted_cells, cells):
+    for i in range(len(cells)):
+        formatted_cells[i].append(str(cells[i]))
+
+    return formatted_cells
+
+def add_to_database(cells):
     db = "sqlite:///PBase.db"
 
     create_table(db)
@@ -77,17 +84,9 @@ def add_to_database(cells, set_cells):
     connection.executemany("""
                            
                            INSERT INTO 
-                           plasmid(name, plasmid_origin, dna_sequence,size, benchling)
-                           VALUES(?,?,?,?,?)""", cells)
+                           plasmid(name, plasmid_origin, set_information, dna_sequence,size, benchling)
+                           VALUES(?,?,?,?,?,?)""", cells)
 
-    connection.executemany("""
-
-                            INSERT INTO
-                            plasmid_set(name, promoter_set1, rbs_set1, goi_set1, terminator_set1,
-                            promoter_set2, rbs_set2, goi_set2, terminator_set2,
-                            promoter_set3, rbs_set3, goi_set3, terminator_set3)
-                            VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)
-                            """, set_cells)
     connection.commit()
     connection.close()
 
@@ -117,27 +116,13 @@ def create_table(db):
         'plasmid', meta,
         Column('name', String, primary_key=True),
         Column('plasmid_origin', String),
+        Column('set_information', String),
         Column('dna_sequence', String),
         Column('size', String),
         Column('benchling', String)
     )
 
-    plasmid_set = Table(
-        'plasmid_set', meta,
-        Column('name', String, primary_key=True),
-        Column('promoter_set1', String),
-        Column('rbs_set1', String),
-        Column('goi_set1', String),
-        Column('terminator_set1', String),
-        Column('promoter_set2', String),
-        Column('rbs_set2', String),
-        Column('goi_set2', String),
-        Column('terminator_set2', String),
-        Column('promoter_set3', String),
-        Column('rbs_set3', String),
-        Column('goi_set3', String),
-        Column('terminator_set3', String)
-    )
+
     meta.create_all(engine)
 
 
