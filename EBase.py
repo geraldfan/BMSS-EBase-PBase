@@ -23,17 +23,16 @@ def read(file):
     # file = 'cytation_H1_plate1_GFP.xlsx'
     cellsId = ('C2', 'CT34')
     timeCellsId = ('A2', 'A34')
-    temperatureCellsId = ('B2', 'B34')
+    temperatureCellsId = ('B2', 'B2')
     settingsId = ('A2', 'F2')
     identifierId = ('B2', 'B2')
-    book = openpyxl.load_workbook(file)
     data_sheet = 'Data'
     settings_sheet = 'Settings'
 
     settingsCells = get_cells(file, settingsId, settings_sheet)
     cells = get_cells(file, cellsId, data_sheet)
     timeCells = get_cells(file, timeCellsId, data_sheet)
-    temperatureCells = get_cells(file, temperatureCellsId, data_sheet)
+    temperatureCells = get_temperature(temperatureCellsId, file, data_sheet)
     identifier = get_identifier(identifierId, file, settings_sheet)
 
     settings = []
@@ -44,12 +43,18 @@ def read(file):
     values = generate_nested_list(values, cells)
     values = append_to_nested_list(values, cells)
 
+
+    time = []
+    time = generate_nested_list(time, timeCells)
+    time = append_time_to_nested_list(time, timeCells)
+
     formatted_cells = []
-    formatted_cells = generate_nested_list(formatted_cells, cells)
-    formatted_cells = append_identifier_to_nested_list(formatted_cells, cells, identifier)
-    formatted_cells = append_time_to_nested_list(formatted_cells, timeCells)
-    formatted_cells = append_to_nested_list(formatted_cells, temperatureCells)
-    formatted_cells = append_values_to_nested_list(formatted_cells, values)
+    formatted_cells = generate_single_nested_list(formatted_cells)
+    formatted_cells = append_single_value_to_nested_list(formatted_cells, identifier)
+    formatted_cells = append_cells_to_single_nested_list(formatted_cells, time)
+    formatted_cells = append_single_value_to_nested_list(formatted_cells, temperatureCells)
+    formatted_cells = append_cells_to_single_nested_list(formatted_cells, values)
+
 
 
     add_to_database(formatted_cells)
@@ -73,9 +78,23 @@ def get_cells(file, cellsId, sheet):
     return cells
 
 
+def get_temperature(temperatureId, file, sheet):
+    book = openpyxl.load_workbook(file)
+    sheet = book[sheet]
+
+    cell = sheet[temperatureId[0]:temperatureId[1]]
+    return cell[0][0].value
+
+
 def generate_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells.append([])
+
+    return formatted_cells
+
+
+def generate_single_nested_list(formatted_cells):
+    formatted_cells.append([])
 
     return formatted_cells
 
@@ -87,6 +106,18 @@ def append_to_nested_list(formatted_cells, cells):
 
     return formatted_cells
 
+
+def append_single_value_to_nested_list(formatted_cells, value):
+    formatted_cells[0].append(value)
+
+    return formatted_cells
+
+def append_cells_to_single_nested_list(formatted_cells, cells):
+    to_append = ''
+    for i in range(len(cells)):
+        to_append += str(cells[i])
+    formatted_cells[0].append(to_append)
+    return formatted_cells
 
 def append_values_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
@@ -106,6 +137,13 @@ def append_time_to_nested_list(formatted_cells, cells):
 def append_identifier_to_nested_list(formatted_cells, cells, identifier):
     for i in range(len(cells)):
         formatted_cells[i].append(identifier)
+
+    return formatted_cells
+
+
+def append_temperature_to_nested_list(formatted_cells, cells, temperature):
+    for i in range(len(cells)):
+        formatted_cells[i].append(temperature)
 
     return formatted_cells
 
