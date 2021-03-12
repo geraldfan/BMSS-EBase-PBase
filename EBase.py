@@ -20,12 +20,12 @@ from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 def read(file):
     # read original data from microplate reader
-    # file = 'cytation_H1_plate1_GFP.xlsx'
+    # file = 'cytation_H1_plate1_OD600.xlsx'
     cellsId = ('C2', 'CT34')
     timeCellsId = ('A2', 'A34')
     temperatureCellsId = ('B2', 'B2')
-    settingsId = ('A2', 'F2')
-    identifierId = ('B2', 'B2')
+    settingsId = ('A2', 'G2')
+    identifierId = ('A2', 'A2')
     data_sheet = 'Data'
     settings_sheet = 'Settings'
 
@@ -171,8 +171,8 @@ def add_to_settings(cells):
     connection.executemany("""
 
                            INSERT INTO
-                           settings(protocol, identifier, experiment_type, temperature, media, equipment)
-                           VALUES(?,?,?,?,?,?)""", cells)
+                           settings(identifier, measurement, experiment_type, temperature, media, equipment, plasmid_name)
+                           VALUES(?,?,?,?,?,?,?)""", cells)
 
     connection.commit()
     connection.close()
@@ -201,20 +201,21 @@ def create_table(db):
 
     data = Table(
         'data', meta,
-        Column('identifier', String),
+        Column('identifier', String, primary_key=True),
         Column('time', String),
         Column('set_temperature', String),
-        Column('data_values', String, primary_key=True)
+        Column('data_values', String)
     )
 
     settings = Table(
         'settings', meta,
-        Column('protocol', String),
         Column('identifier', String, primary_key=True),
+        Column('measurement', String),
         Column('experiment_type', String),
         Column('Temperature', String),
         Column('Media', String),
-        Column('Equipment', String)
+        Column('Equipment', String),
+        Column('plasmid_name', String)
     )
     meta.create_all(engine)
 
