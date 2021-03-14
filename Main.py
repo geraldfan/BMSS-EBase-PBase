@@ -19,7 +19,8 @@ def ui_select_database():
 def read_to_pbase():
     file = input("Enter the file name: ")
     lastRow = input("Enter the id of the last row: ")
-    PBase.read(file, lastRow)
+    sheet = input("Enter the sheet name: ")
+    PBase.read(file, lastRow, sheet)
 
 
 def read_to_ebase():

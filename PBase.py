@@ -11,7 +11,7 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file, lastRow):
+def read(file, lastRow, sheet):
     # read original data from microplate reader
     # file = 'E6-04_plasmid_list.xlsx'
 
@@ -20,10 +20,10 @@ def read(file, lastRow):
     restOriginId = ('P3', get_lastRowId('R', lastRow))
     setInfoId = ('D3', get_lastRowId('O', lastRow))
 
-    nameCells = get_cells(file, nameCellsId)
-    plasmidOriginCells = get_cells(file, plasmidOriginId)
-    restOriginCells = get_cells(file, restOriginId)
-    setInfoCells = get_cells(file, setInfoId)
+    nameCells = get_cells(file, nameCellsId, sheet)
+    plasmidOriginCells = get_cells(file, plasmidOriginId, sheet)
+    restOriginCells = get_cells(file, restOriginId, sheet)
+    setInfoCells = get_cells(file, setInfoId, sheet)
 
     set_cells = []
     set_cells = generate_nested_list(set_cells, nameCells)
@@ -44,9 +44,9 @@ def read(file, lastRow):
 def get_lastRowId(char, lastRow):
     return str(char + lastRow)
 
-def get_cells(file, cellsId):
+def get_cells(file, cellsId, sheet):
     book = openpyxl.load_workbook(file)
-    sheet = book.active
+    sheet = book[sheet]
 
     cells = sheet[cellsId[0]: cellsId[1]]
 
@@ -147,4 +147,4 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("E6-04_plasmid_list.xlsx", "62")
+    read("E6-04_plasmid_list.xlsx", "62", "AiYing")
