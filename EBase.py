@@ -18,11 +18,11 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file):
+def read(file, lastRowId, lastColId):
     # read original data from microplate reader
     # file = 'cytation_H1_plate1_OD600.xlsx'
-    cellsId = ('C2', 'CT34')
-    timeCellsId = ('A2', 'A34')
+    cellsId = ('C2', get_cellId(lastColId, lastRowId))
+    timeCellsId = ('A2', get_cellId('A', lastRowId))
     temperatureCellsId = ('B2', 'B2')
     settingsId = ('A2', 'G2')
     identifierId = ('A2', 'A2')
@@ -43,7 +43,6 @@ def read(file):
     values = generate_nested_list(values, cells)
     values = append_to_nested_list(values, cells)
 
-
     time = []
     time = generate_nested_list(time, timeCells)
     time = append_time_to_nested_list(time, timeCells)
@@ -55,10 +54,12 @@ def read(file):
     formatted_cells = append_single_value_to_nested_list(formatted_cells, temperatureCells)
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, values)
 
-
-
     add_to_database(formatted_cells)
     add_to_settings(settings)
+
+
+def get_cellId(char, lastRow):
+    return str(char + lastRow)
 
 
 def get_identifier(identifierId, file, sheet):
@@ -112,12 +113,14 @@ def append_single_value_to_nested_list(formatted_cells, value):
 
     return formatted_cells
 
+
 def append_cells_to_single_nested_list(formatted_cells, cells):
     to_append = ''
     for i in range(len(cells)):
         to_append += str(cells[i])
     formatted_cells[0].append(to_append)
     return formatted_cells
+
 
 def append_values_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
@@ -222,4 +225,4 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read()
+    read("cytation_H1_plate1_OD600.xlsx", "34", "CT")

@@ -25,7 +25,9 @@ def read_to_pbase():
 
 def read_to_ebase():
     file = input("Enter the file name: ")
-    EBase.read(file)
+    lastRowId = input("Enter the id of the last row: ")
+    lastColId = input("Enter the id of the last col: ")
+    EBase.read(file, lastRowId, lastColId)
 
 
 # Enable the script to be run from the command line
