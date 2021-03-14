@@ -27,7 +27,7 @@ def read(file, lastRow):
 
     set_cells = []
     set_cells = generate_nested_list(set_cells, nameCells)
-    set_cells = append_to_nested_list(set_cells, setInfoCells)
+    set_cells = append_set_cells_to_nested_list(set_cells, setInfoCells)
 
     formatted_cells = []
 
@@ -39,7 +39,6 @@ def read(file, lastRow):
     formatted_cells = append_to_nested_list(formatted_cells, restOriginCells)
 
 
-    print(formatted_cells)
     add_to_database(formatted_cells)
 
 def get_lastRowId(char, lastRow):
@@ -53,6 +52,21 @@ def get_cells(file, cellsId):
 
     return cells
 
+def create_set_dict(cells, row):
+    row_set_dict = {}
+    set1 = []
+    set2 = []
+    set3 = []
+    for i in range(len(cells[row])):
+        if i <= 3:
+            set1.append(cells[row][i].value)
+        elif i <= 7:
+            set2.append(cells[row][i].value)
+        elif i <= 11:
+            set3.append(cells[row][i].value)
+    for variable in ["set1", "set2", "set3"]:
+        row_set_dict[variable] = eval(variable)
+    return row_set_dict
 
 def generate_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
@@ -67,7 +81,12 @@ def append_to_nested_list(formatted_cells, cells):
             formatted_cells[i].append(cells[i][k].value)
 
     return formatted_cells
+def append_set_cells_to_nested_list(formatted_cells, cells):
+    for i in range(len(cells)):
+        row_dict = create_set_dict(cells, i)
+        formatted_cells[i].append(row_dict)
 
+    return formatted_cells
 
 def append_set_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
@@ -128,4 +147,4 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read()
+    read("E6-04_plasmid_list.xlsx", "62")
