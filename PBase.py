@@ -40,8 +40,8 @@ def read(file, lastRow, sheet, contributor):
     formatted_cells = append_to_nested_list(formatted_cells, restOriginCells)
 
     # print(len(formatted_cells[0]))
-    for i in range(len(formatted_cells)):
-        print(formatted_cells[i])
+    # for i in range(len(formatted_cells)):
+    #     print(formatted_cells[i])
 
     add_to_database(formatted_cells)
 
@@ -64,16 +64,39 @@ def create_set_dict(cells, row):
     set1 = []
     set2 = []
     set3 = []
+    set1_nested = {}
+    set2_nested = {}
+    set3_nested = {}
+
     for i in range(len(cells[row])):
         if i <= 3:
-            set1.append(cells[row][i].value)
+            set1_nested = parse_set(i, set1_nested, cells, row)
+            if i == 3:
+                set1.append(set1_nested)
         elif i <= 7:
-            set2.append(cells[row][i].value)
+            set2_nested = parse_set(i, set2_nested, cells, row)
+            if i == 7:
+                set2.append(set2_nested)
         elif i <= 11:
-            set3.append(cells[row][i].value)
+            set3_nested = parse_set(i, set3_nested, cells, row)
+            if i == 11:
+                set3.append(set3_nested)
     for variable in ["set1", "set2", "set3"]:
         row_set_dict[variable] = eval(variable)
     return row_set_dict
+
+def parse_set(i, set_nested, cells, row):
+    if i % 4 == 0:
+        set_nested['Promoter'] = cells[row][i].value
+    elif i % 4 == 1:
+        set_nested['RBS'] = cells[row][i].value
+    elif i % 4 == 2:
+        set_nested['GOI'] = cells[row][i].value
+    elif i % 4 == 3:
+        set_nested['Terminator'] = cells[row][i].value
+
+    return set_nested
+
 
 
 def generate_nested_list(formatted_cells, cells):
