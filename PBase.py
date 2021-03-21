@@ -228,5 +228,5 @@ def create_table(db):
 # Enable the script to be run from the command line
 if __name__ == "__main__":
     read("E6-04_plasmid_list.xlsx", "62", "AiYing", "Ai Ying")
-    read_entry('name', 'location', 'plasmid_origin', 'contributor', 'plasmid_details', 'dna', 'size', 'benchling',
+    read_entry('name', 'location', 'plasmid_origin', '', 'plasmid_details', 'dna', 'size', 'benchling',
                'reference', 'quantity', 'remarks', 'description')

@@ -20,7 +20,7 @@ class SampleApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, EBasePage, PBasePage, SuccessPage):
+        for F in (StartPage, EBasePage, PBasePage, PBaseExcelPage, PBaseEntryPage, SuccessPage):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -92,6 +92,97 @@ class EBasePage(tk.Frame):
 
 
 class PBasePage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        label = tk.Label(self, text="Select method of entry", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+        excelButton = tk.Button(self, text="Parse Excel",
+                                command=lambda: controller.show_frame("PBaseExcelPage"))
+        entryButton = tk.Button(self, text="Enter a new entry",
+                                command=lambda: controller.show_frame("PBaseEntryPage"))
+        excelButton.pack()
+        entryButton.pack()
+
+
+class PBaseEntryPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        name_label = tk.Label(self, text="Name")
+        ent_name = tk.Entry(self, width=50)
+        location_label = tk.Label(self, text="Location")
+        ent_location = tk.Entry(self, width=50)
+        plasmid_origin_antibiotics_label = tk.Label(self, text="Plasmid Origin Antibiotics")
+        ent_plasmid_origin_antibiotics = tk.Entry(self, width=50)
+        contributor_label = tk.Label(self, text="Contributor")
+        ent_contributor = tk.Entry(self, width=50)
+        plasmid_details_label = tk.Label(self, text="Plasmid Details")
+        ent_plasmid_details = tk.Entry(self, width=50)
+        dna_sequence_label = tk.Label(self, text="DNA Sequence")
+        ent_dna_sequence = tk.Entry(self, width=50)
+        size_label = tk.Label(self, text="Size")
+        ent_size = tk.Entry(self, width=50)
+        benchling_label = tk.Label(self, text="Benchling")
+        ent_benchling = tk.Entry(self, width=50)
+        reference_label = tk.Label(self, text="References/Publication")
+        ent_reference = tk.Entry(self, width=50)
+        quantity_label = tk.Label(self, text="Quantity")
+        ent_quantity = tk.Entry(self, width=50)
+        remarks_label = tk.Label(self, text="Remarks")
+        ent_remarks = tk.Entry(self, width=50)
+        description_label = tk.Label(self, text="Description/Purpose")
+        ent_description = tk.Entry(self, width=50)
+
+        name_label.grid(row=0, column=0, sticky="e")
+        ent_name.grid(row=0, column=1)
+        location_label.grid(row=1, column=0, sticky="e")
+        ent_location.grid(row=1, column=1)
+        plasmid_origin_antibiotics_label.grid(row=2, column=0, sticky="e")
+        ent_plasmid_origin_antibiotics.grid(row=2, column=1)
+        contributor_label.grid(row=3, column=0, sticky="e")
+        ent_contributor.grid(row=3, column=1)
+        plasmid_details_label.grid(row=4, column=0, sticky="e")
+        ent_plasmid_details.grid(row=4, column=1)
+        dna_sequence_label.grid(row=5, column=0, sticky="e")
+        ent_dna_sequence.grid(row=5, column=1)
+        size_label.grid(row=6, column=0, sticky="e")
+        ent_size.grid(row=6, column=1)
+        benchling_label.grid(row=7, column=0, sticky="e")
+        ent_benchling.grid(row=7, column=1)
+        reference_label.grid(row=8, column=0, sticky="e")
+        ent_reference.grid(row=8, column=1)
+        quantity_label.grid(row=9, column=0, sticky="e")
+        ent_quantity.grid(row=9, column=1)
+        remarks_label.grid(row=10, column=0, sticky="e")
+        ent_remarks.grid(row=10, column=1)
+        description_label.grid(row=11, column=0, sticky="e")
+        ent_description.grid(row=11, column=1)
+
+        button = tk.Button(self, width=30, text="Add to database",
+                           command=lambda: self.add_to_pbase(ent_name, ent_location, ent_plasmid_origin_antibiotics,
+                                                            ent_contributor, ent_plasmid_details, ent_dna_sequence,
+                                                            ent_size, ent_benchling, ent_reference, ent_quantity,
+                                                            ent_remarks, ent_description, controller))
+        button.grid(row=12, column=0, sticky="sw")
+
+        button = tk.Button(self, width=30, text="Go to the start page",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.grid(row=12, column=1, sticky="se")
+
+    def add_to_pbase(self, ent_name, ent_location, ent_plasmid_origin_antibiotics,
+                    ent_contributor, ent_plasmid_details, ent_dna_sequence,
+                    ent_size, ent_benchling, ent_reference, ent_quantity,
+                    ent_remarks, ent_description, controller):
+        PBase.read_entry(ent_name.get(), ent_location.get(), ent_plasmid_origin_antibiotics.get(),
+                          ent_contributor.get(), ent_plasmid_details.get(), ent_dna_sequence.get(),
+                          ent_size.get(), ent_benchling.get(), ent_reference.get(), ent_quantity.get(),
+                          ent_remarks.get(), ent_description.get())
+        controller.show_frame("SuccessPage")
+
+
+class PBaseExcelPage(tk.Frame):
 
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
@@ -128,7 +219,7 @@ class PBasePage(tk.Frame):
         self.add_to_ebase(filename, ent_lastRowId.get(), ent_sheet.get(), ent_contributor.get())
         controller.show_frame("SuccessPage")
 
-    def add_to_ebase(self, filename, lastRowId, sheet, contributor):
+    def add_to_pbase(self, filename, lastRowId, sheet, contributor):
         PBase.read(filename, lastRowId, sheet, contributor)
 
 
