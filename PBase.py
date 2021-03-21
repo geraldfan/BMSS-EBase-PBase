@@ -39,9 +39,16 @@ def read(file, lastRow, sheet, contributor):
     formatted_cells = append_set_to_nested_list(formatted_cells, set_cells)
     formatted_cells = append_to_nested_list(formatted_cells, restOriginCells)
 
-    # print(len(formatted_cells[0]))
-    # for i in range(len(formatted_cells)):
-    #     print(formatted_cells[i])
+    add_to_database(formatted_cells)
+
+
+def read_entry(name, location, plasmid_origin_antibiotics, contributor, plasmid_details, dna_sequence, size, benchling,
+               reference, quantity, remarks, description):
+    formatted_cells = []
+    formatted_cells = generate_single_nested_list(formatted_cells)
+    formatted_cells = append_entries_to_nested_list(formatted_cells, name, location, plasmid_origin_antibiotics,
+                                                    contributor, plasmid_details, dna_sequence, size, benchling,
+                                                    reference, quantity, remarks, description)
 
     add_to_database(formatted_cells)
 
@@ -85,6 +92,7 @@ def create_set_dict(cells, row):
         row_set_dict[variable] = eval(variable)
     return row_set_dict
 
+
 def parse_set(i, set_nested, cells, row):
     if i % 4 == 0:
         set_nested['Promoter'] = cells[row][i].value
@@ -98,7 +106,6 @@ def parse_set(i, set_nested, cells, row):
     return set_nested
 
 
-
 def generate_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells.append([])
@@ -106,10 +113,34 @@ def generate_nested_list(formatted_cells, cells):
     return formatted_cells
 
 
+def generate_single_nested_list(formatted_cells):
+    formatted_cells.append([])
+    return formatted_cells
+
+
 def append_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         for k in range(len(cells[0])):
             formatted_cells[i].append(cells[i][k].value)
+
+    return formatted_cells
+
+
+def append_entries_to_nested_list(formatted_cells, name, location, plasmid_origin_antibiotics, contributor,
+                                  plasmid_details, dna_sequence,
+                                  size, benchling, reference, quantity, remarks, description):
+    formatted_cells[0].append(name)
+    formatted_cells[0].append(location)
+    formatted_cells[0].append(plasmid_origin_antibiotics)
+    formatted_cells[0].append(contributor)
+    formatted_cells[0].append(plasmid_details)
+    formatted_cells[0].append(dna_sequence)
+    formatted_cells[0].append(size)
+    formatted_cells[0].append(benchling)
+    formatted_cells[0].append(reference)
+    formatted_cells[0].append(quantity)
+    formatted_cells[0].append(remarks)
+    formatted_cells[0].append(description)
 
     return formatted_cells
 
@@ -197,3 +228,5 @@ def create_table(db):
 # Enable the script to be run from the command line
 if __name__ == "__main__":
     read("E6-04_plasmid_list.xlsx", "62", "AiYing", "Ai Ying")
+    read_entry('name', 'location', 'plasmid_origin', 'contributor', 'plasmid_details', 'dna', 'size', 'benchling',
+               'reference', 'quantity', 'remarks', 'description')
