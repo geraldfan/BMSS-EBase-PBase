@@ -11,13 +11,13 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file, lastRow, sheet):
+def read(file, lastRow, sheet, contributor):
     # read original data from microplate reader
     # file = 'E6-04_plasmid_list.xlsx'
 
     nameCellsId = ('A3', get_lastRowId('A', lastRow))
-    plasmidOriginId = ('C3', get_lastRowId('C', lastRow))
-    restOriginId = ('P3', get_lastRowId('R', lastRow))
+    plasmidOriginId = ('B3', get_lastRowId('C', lastRow))
+    restOriginId = ('P3', get_lastRowId('V', lastRow))
     setInfoId = ('D3', get_lastRowId('O', lastRow))
 
     nameCells = get_cells(file, nameCellsId, sheet)
@@ -35,14 +35,20 @@ def read(file, lastRow, sheet):
 
     formatted_cells = append_to_nested_list(formatted_cells, nameCells)
     formatted_cells = append_to_nested_list(formatted_cells, plasmidOriginCells)
+    formatted_cells = append_value_to_nested_list(formatted_cells, contributor)
     formatted_cells = append_set_to_nested_list(formatted_cells, set_cells)
     formatted_cells = append_to_nested_list(formatted_cells, restOriginCells)
 
+    # print(len(formatted_cells[0]))
+    for i in range(len(formatted_cells)):
+        print(formatted_cells[i])
 
     add_to_database(formatted_cells)
 
+
 def get_lastRowId(char, lastRow):
     return str(char + lastRow)
+
 
 def get_cells(file, cellsId, sheet):
     book = openpyxl.load_workbook(file)
@@ -51,6 +57,7 @@ def get_cells(file, cellsId, sheet):
     cells = sheet[cellsId[0]: cellsId[1]]
 
     return cells
+
 
 def create_set_dict(cells, row):
     row_set_dict = {}
@@ -68,6 +75,7 @@ def create_set_dict(cells, row):
         row_set_dict[variable] = eval(variable)
     return row_set_dict
 
+
 def generate_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells.append([])
@@ -81,6 +89,15 @@ def append_to_nested_list(formatted_cells, cells):
             formatted_cells[i].append(cells[i][k].value)
 
     return formatted_cells
+
+
+def append_value_to_nested_list(formatted_cells, value):
+    for i in range(len(formatted_cells)):
+        formatted_cells[i].append(value)
+
+    return formatted_cells
+
+
 def append_set_cells_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         row_dict = create_set_dict(cells, i)
@@ -88,12 +105,15 @@ def append_set_cells_to_nested_list(formatted_cells, cells):
 
     return formatted_cells
 
+
 def append_set_to_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells[i].append(str(cells[i]))
 
     return formatted_cells
 
+
+# TODO change method to use sqlalchemy
 def add_to_database(cells):
     db = "sqlite:///PBase.db"
 
@@ -103,8 +123,9 @@ def add_to_database(cells):
     connection.executemany("""
                            
                            INSERT INTO 
-                           plasmid(name, plasmid_origin, set_information, dna_sequence,size, benchling)
-                           VALUES(?,?,?,?,?,?)""", cells)
+                           plasmid(name, location, plasmid_origin_antibiotics, contributor, plasmid_details, dna_sequence,
+                           'size(bp)', benchling, 'reference/publication', 'quantity', 'remarks', 'description/purpose')
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""", cells)
 
     connection.commit()
     connection.close()
@@ -134,17 +155,22 @@ def create_table(db):
     plasmid = Table(
         'plasmid', meta,
         Column('name', String, primary_key=True),
-        Column('plasmid_origin', String),
-        Column('set_information', String),
+        Column('location', String),
+        Column('plasmid_origin_antibiotics', String),
+        Column('contributor', String),
+        Column('plasmid_details', String),
         Column('dna_sequence', String),
-        Column('size', String),
-        Column('benchling', String)
+        Column('size(bp)', String),
+        Column('benchling', String),
+        Column('reference/publication', String),
+        Column('quantity', String),
+        Column('remarks', String),
+        Column('description/purpose', String)
     )
-
 
     meta.create_all(engine)
 
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("E6-04_plasmid_list.xlsx", "62", "AiYing")
+    read("E6-04_plasmid_list.xlsx", "62", "AiYing", "Ai Ying")
