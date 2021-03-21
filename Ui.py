@@ -101,32 +101,36 @@ class PBasePage(tk.Frame):
         ent_lastRowId = tk.Entry(self, width=50)
         sheet_label = tk.Label(self, text="Sheet name")
         ent_sheet = tk.Entry(self, width=50)
+        contributor_label = tk.Label(self, text="Contributor")
+        ent_contributor = tk.Entry(self, width=50)
 
         lastRowId_label.grid(row=0, column=0, sticky="e")
         ent_lastRowId.grid(row=0, column=1)
         sheet_label.grid(row=1, column=0, sticky="e")
         ent_sheet.grid(row=1, column=1)
-
+        contributor_label.grid(row=2, column=0, sticky="e")
+        ent_contributor.grid(row=2, column=1, sticky="e")
 
         button = tk.Button(self, width=30, text="Select file and Add to database",
-                           command=lambda: self.file_select(ent_lastRowId, ent_sheet, controller))
-        button.grid(row=2, column=0, sticky="sw")
+                           command=lambda: self.file_select(ent_lastRowId, ent_sheet, ent_contributor, controller))
+        button.grid(row=3, column=0, sticky="sw")
 
         button = tk.Button(self, width=30, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
-        button.grid(row=2, column=1, sticky="se")
+        button.grid(row=3, column=1, sticky="se")
 
-    def file_select(self, ent_lastRowId, ent_sheet, controller):
+    def file_select(self, ent_lastRowId, ent_sheet, ent_contributor, controller):
         root = tk.Tk()
         root.withdraw()
         fTyp = [('', '* .xlsx')]
         iDir = r'path to the folder you want to reference'
         filename = filedialog.askopenfilename(filetype=fTyp, initialdir=iDir)
-        self.add_to_ebase(filename, ent_lastRowId.get(), ent_sheet.get())
+        self.add_to_ebase(filename, ent_lastRowId.get(), ent_sheet.get(), ent_contributor.get())
         controller.show_frame("SuccessPage")
 
-    def add_to_ebase(self, filename, lastRowId, sheet):
-        PBase.read(filename, lastRowId, sheet)
+    def add_to_ebase(self, filename, lastRowId, sheet, contributor):
+        PBase.read(filename, lastRowId, sheet, contributor)
+
 
 class SuccessPage(tk.Frame):
 
