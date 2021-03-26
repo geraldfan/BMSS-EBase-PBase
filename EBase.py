@@ -18,16 +18,18 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file, lastRowId, lastColId):
+def read(file, firstRowId, firstColId,  lastRowId, lastColId):
     # read original data from microplate reader
     # file = 'cytation_H1_plate1_OD600.xlsx'
-    cellsId = ('C2', get_cellId(lastColId, lastRowId))
-    timeCellsId = ('A2', get_cellId('A', lastRowId))
-    temperatureCellsId = ('B2', 'B2')
+    cellsId = (get_cellId(offset_col(firstColId, 2), firstRowId), get_cellId(lastColId, lastRowId))
+    timeCellsId = (get_cellId(firstColId, firstRowId), get_cellId(firstColId, lastRowId))
+    temperatureCellsId = (get_cellId(offset_col(firstColId, 1), firstRowId), get_cellId(offset_col(firstColId, 1), firstRowId))
     settingsId = ('A2', 'G2')
     identifierId = ('A2', 'A2')
     data_sheet = 'Data'
-    settings_sheet = 'Settings'
+    settings_sheet = 'Metadata'
+
+    print(timeCellsId)
 
     settingsCells = get_cells(file, settingsId, settings_sheet)
     cells = get_cells(file, cellsId, data_sheet)
@@ -54,10 +56,13 @@ def read(file, lastRowId, lastColId):
     formatted_cells = append_single_value_to_nested_list(formatted_cells, temperatureCells)
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, values)
 
+
+
     add_to_database(formatted_cells)
     add_to_settings(settings)
 
-
+def offset_col(char, offset):
+    return str(chr(ord(char) + offset))
 def get_cellId(char, lastRow):
     return str(char + lastRow)
 
@@ -159,7 +164,7 @@ def add_to_database(cells):
     connection.executemany("""
 
                            INSERT INTO
-                           data(identifier, time, set_temperature, data_values)
+                           data(experimental_id, time, set_temperature, data_values)
                            VALUES(?,?,?,?)""", cells)
 
     connection.commit()
@@ -174,7 +179,7 @@ def add_to_settings(cells):
     connection.executemany("""
 
                            INSERT INTO
-                           settings(identifier, measurement, experiment_type, temperature, media, equipment, plasmid_name)
+                           settings(experimental_id, measurement, experiment_type, temperature, media, equipment, plasmid_name)
                            VALUES(?,?,?,?,?,?,?)""", cells)
 
     connection.commit()
@@ -204,7 +209,7 @@ def create_table(db):
 
     data = Table(
         'data', meta,
-        Column('identifier', String, primary_key=True),
+        Column('experimental_id', String, primary_key=True),
         Column('time', String),
         Column('set_temperature', String),
         Column('data_values', String)
@@ -212,7 +217,7 @@ def create_table(db):
 
     settings = Table(
         'settings', meta,
-        Column('identifier', String, primary_key=True),
+        Column('experimental_id', String, primary_key=True),
         Column('measurement', String),
         Column('experiment_type', String),
         Column('Temperature', String),
@@ -225,4 +230,4 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("cytation_H1_plate1_OD600.xlsx", "34", "CT")
+    read("cytation_H1_plate1.xlsx", "63" , "B", "95", "CU")
