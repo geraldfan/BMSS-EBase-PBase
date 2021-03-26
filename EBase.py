@@ -6,6 +6,8 @@ Created on Sun Feb 28 11:17:39 2021
 """
 
 # -*- coding: utf-8 -*-
+import re
+
 """
 Created on Thu Feb 25 14:44:13 2021
 
@@ -18,7 +20,8 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model):
+def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model, readODWavelengthId,
+         readGFPExcitationEmissionId,readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
     # read original data from microplate reader
     # file = 'cytation_H1_plate1_OD600.xlsx'
     cellsId = (get_cellId(offset_col(firstColId, 2), firstRowId), get_cellId(lastColId, lastRowId))
@@ -26,6 +29,10 @@ def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model):
     temperatureCellsId = (
         get_cellId(offset_col(firstColId, 1), firstRowId), get_cellId(offset_col(firstColId, 1), firstRowId))
     filePathsId = ("B4", "B5")
+    procedureCellsId = ("B14", "B21")
+    readODId = (readODWavelengthId, readODWavelengthId)
+    readGFPId = (readGFPExcitationEmissionId, readGFPGainId)
+    readRFPId = (readRFPExcitationEmissionId, readRFPGainId)
     experimentDateAndTimeId = ("B7", "B8")
     settingsId = ('A2', 'F2')
     identifierId = ('A2', 'A2')
@@ -35,14 +42,21 @@ def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model):
     settingsCells = get_cells(file, settingsId, settings_sheet)
     filePathsCells = get_cells(file, filePathsId, data_sheet)
     experimentDateAndTimeCells = get_cells(file, experimentDateAndTimeId, data_sheet)
+    procedureCells = get_cells(file, procedureCellsId, data_sheet)
+    readGFPCells = get_cells(file, readGFPId, data_sheet)
+    readRFPCells = get_cells(file, readRFPId, data_sheet)
     cells = get_cells(file, cellsId, data_sheet)
     timeCells = get_cells(file, timeCellsId, data_sheet)
-    temperatureCells = get_temperature(temperatureCellsId, file, data_sheet)
+    temperatureCells = get_single_value(temperatureCellsId, file, data_sheet)
 
     identifier = get_identifier(identifierId, file, settings_sheet)
     equipment = create_dict(equipment, model)
     filePaths = create_file_paths_dict(filePathsCells)
+    readODWavelength = get_single_value(readODId, file, data_sheet)
+
     experimentDateAndTime = create_experiment_date_and_time_dict(experimentDateAndTimeCells)
+    readInfo = create_read_info_dict(readODWavelength, readGFPCells, readRFPCells)
+    procedure_details = create_procedure_details_dict(procedureCells, readInfo)
 
     settings = []
     settings = generate_nested_list(settings, settingsCells)
@@ -50,6 +64,7 @@ def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model):
     settings = append_single_value_to_nested_list(settings, str(equipment))
     settings = append_single_value_to_nested_list(settings, str(filePaths))
     settings = append_single_value_to_nested_list(settings, str(experimentDateAndTime))
+    settings = append_single_value_to_nested_list(settings, str(procedure_details))
 
     values = []
     values = generate_nested_list(values, cells)
@@ -97,6 +112,34 @@ def create_experiment_date_and_time_dict(experimentDateAndTimeCells):
                        experimentDateAndTimeCells[1][0].value.strftime("%H:%M:%S"))
 
 
+def create_read_info_dict(readODWavelength, readGFPCells, readRFPCells):
+    read_info_dict = create_dict("OD", create_dict("Wavelength", extract_int_as_string(readODWavelength)))
+    gfp_dict = create_fp_dict(readGFPCells)
+    read_info_dict = add_to_dict(read_info_dict, "GFP", str(gfp_dict))
+    rfp_dict = create_fp_dict(readRFPCells)
+    read_info_dict = add_to_dict(read_info_dict, "RFP", str(rfp_dict))
+    return read_info_dict
+
+def create_procedure_details_dict(procedureCells, readInfo):
+    procedure_details_dict = create_dict("Plate Type", procedureCells[0][0].value)
+    procedure_details_dict = add_to_dict(procedure_details_dict, "Set Temperature", procedureCells[2][0].value)
+    procedure_details_dict = add_to_dict(procedure_details_dict, "Start Kinetic", procedureCells[5][0].value)
+    shake_dict = create_shake_dict(procedureCells)
+    procedure_details_dict = add_to_dict(procedure_details_dict, "Shake", str(shake_dict))
+
+    return add_to_dict(procedure_details_dict, "Read", readInfo)
+
+def create_shake_dict(procedureCells):
+    shake_dict = create_dict("Orbital", procedureCells[6][0].value.replace("Orbital: ", ""))
+    return add_to_dict(shake_dict, "Frequency", procedureCells[7][0].value.replace("Frequency: ", ""))
+
+def create_fp_dict(readFPCells):
+    excitation_emissions = readFPCells[0][0].value.split(",")
+    gfp_dict = create_dict("Excitation", extract_int_as_string(excitation_emissions[0]))
+    gfp_dict = add_to_dict(gfp_dict, "Emission", extract_int_as_string(excitation_emissions[1]))
+    return add_to_dict(gfp_dict, "Gain", extract_int_as_string(readFPCells[1][0].value))
+
+
 def get_cells(file, cellsId, sheet):
     book = openpyxl.load_workbook(file)
     sheet = book[sheet]
@@ -106,7 +149,11 @@ def get_cells(file, cellsId, sheet):
     return cells
 
 
-def get_temperature(temperatureId, file, sheet):
+def extract_int_as_string(string):
+    return str(re.search(r'\d+', string).group())
+
+
+def get_single_value(temperatureId, file, sheet):
     book = openpyxl.load_workbook(file)
     sheet = book[sheet]
 
@@ -212,8 +259,8 @@ def add_to_settings(cells):
 
                            INSERT INTO
                            settings(experimental_id, measurement, experiment_type, temperature, media, plasmid_name, 
-                           equipment, filepath, date )
-                           VALUES(?,?,?,?,?,?,?,?,?)""", cells)
+                           equipment, filepath, date, procedure_details )
+                           VALUES(?,?,?,?,?,?,?,?,?,?)""", cells)
 
     connection.commit()
     connection.close()
@@ -258,7 +305,8 @@ def create_table(db):
         Column('plasmid_name', String),
         Column('Equipment', String),
         Column('Filepath', String),
-        Column('Date', String)
+        Column('Date', String),
+        Column('procedure_details', String)
 
     )
     meta.create_all(engine)
@@ -266,4 +314,5 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "Microplate reader", "Cytation 5")
+    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "Microplate reader", "Cytation 5", "B25", "B31", "B32",
+         "B40", "B41")
