@@ -25,22 +25,26 @@ def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model):
     timeCellsId = (get_cellId(firstColId, firstRowId), get_cellId(firstColId, lastRowId))
     temperatureCellsId = (
     get_cellId(offset_col(firstColId, 1), firstRowId), get_cellId(offset_col(firstColId, 1), firstRowId))
+    filePathsId = ("B4", "B5")
     settingsId = ('A2', 'F2')
     identifierId = ('A2', 'A2')
     data_sheet = 'Data'
     settings_sheet = 'Metadata'
 
     settingsCells = get_cells(file, settingsId, settings_sheet)
+    filePathsCells = get_cells(file, filePathsId, data_sheet)
     cells = get_cells(file, cellsId, data_sheet)
     timeCells = get_cells(file, timeCellsId, data_sheet)
     temperatureCells = get_temperature(temperatureCellsId, file, data_sheet)
     identifier = get_identifier(identifierId, file, settings_sheet)
     equipment = create_dict(equipment, model)
+    filePaths = create_file_paths_dict(filePathsCells)
 
     settings = []
     settings = generate_nested_list(settings, settingsCells)
     settings = append_to_nested_list(settings, settingsCells)
     settings = append_single_value_to_nested_list(settings, str(equipment))
+    settings = append_single_value_to_nested_list(settings, str(filePaths))
 
     values = []
     values = generate_nested_list(values, cells)
@@ -76,6 +80,9 @@ def get_identifier(identifierId, file, sheet):
     cell = sheet[identifierId[0]:identifierId[1]]
     return cell[0][0].value
 
+def create_file_paths_dict(filePathsCells):
+    file_paths_dict = create_dict("Experiment", filePathsCells[0][0].value)
+    return add_to_dict(file_paths_dict, "Protocol", filePathsCells[1][0].value)
 
 def get_cells(file, cellsId, sheet):
     book = openpyxl.load_workbook(file)
@@ -98,6 +105,9 @@ def create_dict(key, value):
     output_dict = {key: value}
     return output_dict
 
+def add_to_dict(dict, key, value):
+    dict[key] = value
+    return dict
 
 def generate_nested_list(formatted_cells, cells):
     for i in range(len(cells)):
@@ -186,8 +196,8 @@ def add_to_settings(cells):
     connection.executemany("""
 
                            INSERT INTO
-                           settings(experimental_id, measurement, experiment_type, temperature, media, equipment, plasmid_name)
-                           VALUES(?,?,?,?,?,?,?)""", cells)
+                           settings(experimental_id, measurement, experiment_type, temperature, media, plasmid_name, equipment, filepath )
+                           VALUES(?,?,?,?,?,?,?,?)""", cells)
 
     connection.commit()
     connection.close()
@@ -231,6 +241,7 @@ def create_table(db):
         Column('Media', String),
         Column('plasmid_name', String),
         Column('Equipment', String),
+        Column('Filepath', String)
 
     )
     meta.create_all(engine)
