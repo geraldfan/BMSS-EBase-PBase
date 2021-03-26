@@ -384,7 +384,7 @@ class PBaseExcelPage(tk.Frame):
         fTyp = [('', '* .xlsx')]
         iDir = r'path to the folder you want to reference'
         filename = filedialog.askopenfilename(filetype=fTyp, initialdir=iDir)
-        self.add_to_ebase(filename, ent_lastRowId.get(), ent_sheet.get(), ent_contributor.get())
+        self.add_to_pbase(filename, ent_lastRowId.get(), ent_sheet.get(), ent_contributor.get())
         controller.show_frame("SuccessPage")
 
     def add_to_pbase(self, filename, lastRowId, sheet, contributor):
