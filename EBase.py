@@ -20,14 +20,23 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model, readODWavelengthId,
-         readGFPExcitationEmissionId,readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
+def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, gfpLastRowId,
+         rfpFirstRowId, rfpLastRowId, equipment, model, readODWavelengthId, readGFPExcitationEmissionId, readGFPGainId,
+         readRFPExcitationEmissionId, readRFPGainId):
     # read original data from microplate reader
     # file = 'cytation_H1_plate1_OD600.xlsx'
-    cellsId = (get_cellId(offset_col(firstColId, 2), firstRowId), get_cellId(lastColId, lastRowId))
-    timeCellsId = (get_cellId(firstColId, firstRowId), get_cellId(firstColId, lastRowId))
-    temperatureCellsId = (
-        get_cellId(offset_col(firstColId, 1), firstRowId), get_cellId(offset_col(firstColId, 1), firstRowId))
+    odCellsId = (get_cellId(offset_col(firstColId, 2), odFirstRowId), get_cellId(lastColId, odLastRowId))
+    odTimeCellsId = (get_cellId(firstColId, odFirstRowId), get_cellId(firstColId, odLastRowId))
+    odTemperatureCellsId = (
+        get_cellId(offset_col(firstColId, 1), odFirstRowId), get_cellId(offset_col(firstColId, 1), odFirstRowId))
+    gfpCellsId = (get_cellId(offset_col(firstColId, 2), gfpFirstRowId), get_cellId(lastColId, gfpLastRowId))
+    gfpTimeCellsId = (get_cellId(firstColId, gfpFirstRowId), get_cellId(firstColId, gfpLastRowId))
+    gfpTemperatureCellsId = (
+        get_cellId(offset_col(firstColId, 1), gfpFirstRowId), get_cellId(offset_col(firstColId, 1), gfpFirstRowId))
+    rfpCellsId = (get_cellId(offset_col(firstColId, 2), rfpFirstRowId), get_cellId(lastColId, rfpLastRowId))
+    rfpTimeCellsId = (get_cellId(firstColId, rfpFirstRowId), get_cellId(firstColId, rfpLastRowId))
+    rfpTemperatureCellsId = (
+        get_cellId(offset_col(firstColId, 1), rfpFirstRowId), get_cellId(offset_col(firstColId, 1), rfpFirstRowId))
     filePathsId = ("B4", "B5")
     procedureCellsId = ("B14", "B21")
     readODId = (readODWavelengthId, readODWavelengthId)
@@ -45,9 +54,15 @@ def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model, r
     procedureCells = get_cells(file, procedureCellsId, data_sheet)
     readGFPCells = get_cells(file, readGFPId, data_sheet)
     readRFPCells = get_cells(file, readRFPId, data_sheet)
-    cells = get_cells(file, cellsId, data_sheet)
-    timeCells = get_cells(file, timeCellsId, data_sheet)
-    temperatureCells = get_single_value(temperatureCellsId, file, data_sheet)
+    odCells = get_cells(file, odCellsId, data_sheet)
+    odTimeCells = get_cells(file, odTimeCellsId, data_sheet)
+    odTemperatureCells = get_single_value(odTemperatureCellsId, file, data_sheet)
+    gfpCells = get_cells(file, gfpCellsId, data_sheet)
+    gfpTimeCells = get_cells(file, gfpTimeCellsId, data_sheet)
+    gfpTemperatureCells = get_single_value(gfpTemperatureCellsId, file, data_sheet)  
+    rfpCells = get_cells(file, rfpCellsId, data_sheet)
+    rfpTimeCells = get_cells(file, rfpTimeCellsId, data_sheet)
+    rfpTemperatureCells = get_single_value(rfpTemperatureCellsId, file, data_sheet)
 
     identifier = get_identifier(identifierId, file, settings_sheet)
     equipment = create_dict(equipment, model)
@@ -66,20 +81,16 @@ def read(file, firstRowId, firstColId, lastRowId, lastColId, equipment, model, r
     settings = append_single_value_to_nested_list(settings, str(experimentDateAndTime))
     settings = append_single_value_to_nested_list(settings, str(procedure_details))
 
-    values = []
-    values = generate_nested_list(values, cells)
-    values = append_to_nested_list(values, cells)
-
-    time = []
-    time = generate_nested_list(time, timeCells)
-    time = append_time_to_nested_list(time, timeCells)
+    data_values = create_data_dict(odCells, gfpCells, rfpCells)
+    time = create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells)
+    temperature = create_temperature_dict(odTemperatureCells, gfpTemperatureCells, rfpTemperatureCells)
 
     formatted_cells = []
     formatted_cells = generate_single_nested_list(formatted_cells)
     formatted_cells = append_single_value_to_nested_list(formatted_cells, identifier)
-    formatted_cells = append_cells_to_single_nested_list(formatted_cells, time)
-    formatted_cells = append_single_value_to_nested_list(formatted_cells, temperatureCells)
-    formatted_cells = append_cells_to_single_nested_list(formatted_cells, values)
+    formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(time))
+    formatted_cells = append_single_value_to_nested_list(formatted_cells, odTemperatureCells)
+    formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_values))
 
     add_to_database(formatted_cells)
     add_to_settings(settings)
@@ -111,6 +122,36 @@ def create_experiment_date_and_time_dict(experimentDateAndTimeCells):
     return add_to_dict(experiment_date_and_time_dict, "Time",
                        experimentDateAndTimeCells[1][0].value.strftime("%H:%M:%S"))
 
+def create_temperature_dict(odTemperatureCells, gfpTemperatureCells, rfpTemperatureCells):
+    temperature_dict = create_dict("OD", odTemperatureCells)
+    temperature_dict = add_to_dict(temperature_dict, "GFP", gfpTemperatureCells)
+    return add_to_dict(temperature_dict, "RFP", rfpTemperatureCells)
+
+def create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells):
+    odTime = []
+    odTime = append_time_to_list(odTime, odTimeCells)
+    gfpTime = []
+    gfpTime = append_time_to_list(gfpTime, gfpTimeCells)
+    rfpTime = []
+    rfpTime = generate_nested_list(rfpTime, rfpTimeCells)
+    rfpTime = append_time_to_list(rfpTime, rfpTimeCells)
+    time_dict = create_dict("OD", odTime)
+    time_dict = add_to_dict(time_dict, "GFP", gfpTime)
+    return add_to_dict(time_dict, "RFP", rfpTime)
+
+def create_data_dict(odCells, gfpCells, rfpCells):
+    odValues = []
+    odValues = generate_nested_list(odValues, odCells)
+    odValues = append_to_nested_list(odValues, odCells)
+    gfpValues = []
+    gfpValues = generate_nested_list(gfpValues, gfpCells)
+    gfpValues = append_to_nested_list(gfpValues, gfpCells)
+    rfpValues = []
+    rfpValues = generate_nested_list(rfpValues, rfpCells)
+    rfpValues = append_to_nested_list(rfpValues, rfpCells)
+    data_dict = create_dict("OD" , odValues)
+    data_dict = add_to_dict(data_dict, "GFP", gfpValues)
+    return add_to_dict(data_dict, "RFP", rfpValues)
 
 def create_read_info_dict(readODWavelength, readGFPCells, readRFPCells):
     read_info_dict = create_dict("OD", create_dict("Wavelength", extract_int_as_string(readODWavelength)))
@@ -119,6 +160,7 @@ def create_read_info_dict(readODWavelength, readGFPCells, readRFPCells):
     rfp_dict = create_fp_dict(readRFPCells)
     read_info_dict = add_to_dict(read_info_dict, "RFP", str(rfp_dict))
     return read_info_dict
+
 
 def create_procedure_details_dict(procedureCells, readInfo):
     procedure_details_dict = create_dict("Plate Type", procedureCells[0][0].value)
@@ -129,9 +171,11 @@ def create_procedure_details_dict(procedureCells, readInfo):
 
     return add_to_dict(procedure_details_dict, "Read", readInfo)
 
+
 def create_shake_dict(procedureCells):
     shake_dict = create_dict("Orbital", procedureCells[6][0].value.replace("Orbital: ", ""))
     return add_to_dict(shake_dict, "Frequency", procedureCells[7][0].value.replace("Frequency: ", ""))
+
 
 def create_fp_dict(readFPCells):
     excitation_emissions = readFPCells[0][0].value.split(",")
@@ -220,6 +264,11 @@ def append_time_to_nested_list(formatted_cells, cells):
 
     return formatted_cells
 
+def append_time_to_list(formatted_cells, cells):
+    for i in range(len(cells)):
+        formatted_cells.append(cells[i][0].value.strftime("%H:%M:%S"))
+
+    return formatted_cells
 
 def append_identifier_to_nested_list(formatted_cells, cells, identifier):
     for i in range(len(cells)):
@@ -314,5 +363,5 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "Microplate reader", "Cytation 5", "B25", "B31", "B32",
+    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "100", "132", "137", "169", "Microplate reader", "Cytation 5", "B25", "B31", "B32",
          "B40", "B41")
