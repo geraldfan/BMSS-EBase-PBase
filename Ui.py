@@ -21,7 +21,7 @@ class SampleApp(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, EBasePage, PBasePage, PBaseExcelPage, PBaseEntryPage, PBaseEntryPageTwo,
+        for F in (StartPage, EBasePage, EBasePageTwo, PBasePage, PBaseExcelPage, PBaseEntryPage, PBaseEntryPageTwo,
                   PBaseEntryPageThree, SuccessPage):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
@@ -64,36 +64,147 @@ class EBasePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+        self.firstColId = tk.StringVar()
+        self.firstColId.set("")
+        self.lastColId = tk.StringVar()
+        self.lastColId.set("")
+        self.odFirstRowId = tk.StringVar()
+        self.odFirstRowId.set("")
+        self.odLastRowId = tk.StringVar()
+        self.odLastRowId.set("")
+        self.gfpFirstRowId = tk.StringVar()
+        self.gfpFirstRowId.set("")
+        self.gfpLastRowId = tk.StringVar()
+        self.gfpLastRowId.set("")
+        self.rfpFirstRowId = tk.StringVar()
+        self.rfpFirstRowId.set("")
+        self.rfpLastRowId = tk.StringVar()
+        self.rfpLastRowId.set("")
 
-        lastRowId_label = tk.Label(self, text="Last Row ID")
-        ent_lastRowId = tk.Entry(self, width=50)
-        lastColId_label = tk.Label(self, text="Last Col ID")
-        ent_lastColId = tk.Entry(self, width=50)
+        firstColId_label = tk.Label(self, text="First Col")
+        ent_firstColId = tk.Entry(self, textvariable=self.firstColId, width=50)
+        lastColId_label = tk.Label(self, text="Last Col")
+        ent_lastColId = tk.Entry(self, textvariable=self.lastColId, width=50)
+        odFirstRowId_label = tk.Label(self, text="OD First Row")
+        ent_odFirstRowId = tk.Entry(self, textvariable=self.odFirstRowId, width=50)
+        odLastRowId_label = tk.Label(self, text="OD Last Row")
+        ent_odLastRowId = tk.Entry(self, textvariable=self.odLastRowId, width=50)
+        gfpFirstRowId_label = tk.Label(self, text="GFP First Row")
+        ent_gfpFirstRowId = tk.Entry(self, textvariable=self.gfpFirstRowId, width=50)
+        gfpLastRowId_label = tk.Label(self, text="GFP Last Row")
+        ent_gfpLastRowId = tk.Entry(self, textvariable=self.gfpLastRowId, width=50)
+        rfpFirstRowId_label = tk.Label(self, text="RFP First Row")
+        ent_rfpFirstRowId = tk.Entry(self, textvariable=self.rfpFirstRowId, width=50)
+        rfpLastRowId_label = tk.Label(self, text="RFP Last Row")
+        ent_rfpLastRowId = tk.Entry(self, textvariable=self.rfpLastRowId, width=50)
 
-        lastRowId_label.grid(row=0, column=0, sticky="e")
-        ent_lastRowId.grid(row=0, column=1)
+        firstColId_label.grid(row=0, column=0, sticky="e")
+        ent_firstColId.grid(row=0, column=1)
         lastColId_label.grid(row=1, column=0, sticky="e")
         ent_lastColId.grid(row=1, column=1)
+        odFirstRowId_label.grid(row=2, column=0, sticky="e")
+        ent_odFirstRowId.grid(row=2, column=1)
+        odLastRowId_label.grid(row=3, column=0, sticky="e")
+        ent_odLastRowId.grid(row=3, column=1)
+        gfpFirstRowId_label.grid(row=4, column=0, sticky="e")
+        ent_gfpFirstRowId.grid(row=4, column=1)
+        gfpLastRowId_label.grid(row=5, column=0, sticky="e")
+        ent_gfpLastRowId.grid(row=5, column=1)
+        rfpFirstRowId_label.grid(row=6, column=0, sticky="e")
+        ent_rfpFirstRowId.grid(row=6, column=1)
+        rfpLastRowId_label.grid(row=7, column=0, sticky="e")
+        ent_rfpLastRowId.grid(row=7, column=1)
 
-        button = tk.Button(self, width=30, text="Select file and Add to database",
-                           command=lambda: self.file_select(ent_lastRowId, ent_lastColId, controller))
-        button.grid(row=2, column=0, sticky="sw")
-
+        nextButton = tk.Button(self, width=30, text="Next",
+                               command=lambda: controller.show_frame("EBasePageTwo"))
+        nextButton.grid(row=8, column=0, sticky="se")
         button = tk.Button(self, width=30, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
-        button.grid(row=2, column=1, sticky="se")
+        button.grid(row=8, column=1, sticky="se")
 
-    def file_select(self, ent_lastRowId, ent_lastColId, controller):
+
+class EBasePageTwo(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+        self.equipment = tk.StringVar()
+        self.equipment.set("")
+        self.model = tk.StringVar()
+        self.model.set("")
+        self.readODWavelengthId = tk.StringVar()
+        self.readODWavelengthId.set("")
+        self.readGFPExcitationEmissionId = tk.StringVar()
+        self.readGFPExcitationEmissionId.set("")
+        self.readGFPGainId = tk.StringVar()
+        self.readGFPGainId.set("")
+        self.readRFPExcitationEmissionId = tk.StringVar()
+        self.readRFPExcitationEmissionId.set("")
+        self.readRFPGainId = tk.StringVar()
+        self.readRFPGainId.set("")
+
+        page1 = self.controller.get_page("EBasePage")
+
+        equipment_label = tk.Label(self, text="Equipment")
+        ent_equipment = tk.Entry(self, textvariable=self.equipment, width=50)
+        model_label = tk.Label(self, text="Model")
+        ent_model = tk.Entry(self, textvariable=self.model, width=50)
+        readODWavelengthId_label = tk.Label(self, text="OD Read Wavelength Cell")
+        ent_readODWavelengthId = tk.Entry(self, textvariable=self.readODWavelengthId, width=50)
+        readGFPExcitationEmissionId_label = tk.Label(self, text="GFP Read Excitation Emission Cell")
+        ent_readGFPExcitationEmissionId = tk.Entry(self, textvariable=self.readGFPExcitationEmissionId, width=50)
+        readGFPGainId_label = tk.Label(self, text="GFP Read Gain Cell")
+        ent_readGFPGainId = tk.Entry(self, textvariable=self.readGFPGainId, width=50)
+        readRFPExcitationEmissionId_label = tk.Label(self, text="RFP Read Excitation Emission Cell")
+        ent_readRFPExcitationEmissionId = tk.Entry(self, textvariable=self.readRFPExcitationEmissionId, width=50)
+        readRFPGainId_label = tk.Label(self, text="RFP Read Gain Cell")
+        ent_readRFPGainId = tk.Entry(self, textvariable=self.readRFPGainId, width=50)
+
+        equipment_label.grid(row=0, column=0, sticky="e")
+        ent_equipment.grid(row=0, column=1)
+        model_label.grid(row=1, column=0, sticky="e")
+        ent_model.grid(row=1, column=1)
+        readODWavelengthId_label.grid(row=2, column=0, sticky="e")
+        ent_readODWavelengthId.grid(row=2, column=1)
+        readGFPExcitationEmissionId_label.grid(row=3, column=0, sticky="e")
+        ent_readGFPExcitationEmissionId.grid(row=3, column=1)
+        readGFPGainId_label.grid(row=4, column=0, sticky="e")
+        ent_readGFPGainId.grid(row=4, column=1)
+        readRFPExcitationEmissionId_label.grid(row=5, column=0, sticky="e")
+        ent_readRFPExcitationEmissionId.grid(row=5, column=1)
+        readRFPGainId_label.grid(row=6, column=0, sticky="e")
+        ent_readRFPGainId.grid(row=6, column=1)
+
+        button = tk.Button(self, width=30, text="Select file and Add to database",
+                           command=lambda: self.file_select(controller, page1, ent_equipment.get(), ent_model.get(),
+                                                            ent_readODWavelengthId.get(),
+                                                            ent_readGFPExcitationEmissionId.get(),
+                                                            ent_readGFPGainId.get(),
+                                                            ent_readRFPExcitationEmissionId.get(),
+                                                            ent_readRFPGainId.get()))
+        button.grid(row=7, column=0, sticky="sw")
+        button = tk.Button(self, width=30, text="Go to the start page",
+                           command=lambda: controller.show_frame("StartPage"))
+        button.grid(row=7, column=1, sticky="se")
+
+    def file_select(self, controller, page1, equipment, model, readODWavelengthId, readGRFPExcitationEmissionId,
+                    readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
         root = tk.Tk()
         root.withdraw()
         fTyp = [('', '* .xlsx')]
         iDir = r'path to the folder you want to reference'
         filename = filedialog.askopenfilename(filetype=fTyp, initialdir=iDir)
-        self.add_to_ebase(filename, ent_lastRowId.get(), ent_lastColId.get())
+        self.add_to_ebase(filename, controller, page1, equipment, model, readODWavelengthId,
+                          readGRFPExcitationEmissionId,
+                          readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
         controller.show_frame("SuccessPage")
 
-    def add_to_ebase(self, filename, lastRowId, lastColId):
-        EBase.read(filename, lastRowId, lastColId)
+    def add_to_ebase(self, filename, controller, page1, equipment, model, readODWavelengthId,
+                     readGFPExcitationEmissionId,
+                     readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
+        EBase.read(filename, page1.odFirstRowId.get(), page1.firstColId.get(), page1.odLastRowId.get(),
+                   page1.lastColId.get(), page1.gfpFirstRowId.get(), page1.gfpLastRowId.get(),
+                   page1.rfpFirstRowId.get(), page1.rfpLastRowId.get(), equipment, model, readODWavelengthId,
+                   readGFPExcitationEmissionId, readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
 
 
 class PBasePage(tk.Frame):
