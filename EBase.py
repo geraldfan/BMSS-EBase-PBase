@@ -45,8 +45,11 @@ def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, 
     experimentDateAndTimeId = ("B7", "B8")
     settingsId = ('A2', 'F2')
     identifierId = ('A2', 'A2')
+    wellId = ('A1', 'CR1')
+    wellInfoId = ('A2', 'CR2')
     data_sheet = 'Data'
     settings_sheet = 'Metadata'
+    well_sheet = 'Well Information'
 
     settingsCells = get_cells(file, settingsId, settings_sheet)
     filePathsCells = get_cells(file, filePathsId, data_sheet)
@@ -59,19 +62,22 @@ def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, 
     odTemperatureCells = get_single_value(odTemperatureCellsId, file, data_sheet)
     gfpCells = get_cells(file, gfpCellsId, data_sheet)
     gfpTimeCells = get_cells(file, gfpTimeCellsId, data_sheet)
-    gfpTemperatureCells = get_single_value(gfpTemperatureCellsId, file, data_sheet)  
+    gfpTemperatureCells = get_single_value(gfpTemperatureCellsId, file, data_sheet)
     rfpCells = get_cells(file, rfpCellsId, data_sheet)
     rfpTimeCells = get_cells(file, rfpTimeCellsId, data_sheet)
     rfpTemperatureCells = get_single_value(rfpTemperatureCellsId, file, data_sheet)
-
+    wellCells = get_cells(file, wellId, well_sheet)
+    wellInfoCells = get_cells(file, wellInfoId, well_sheet)
     identifier = get_identifier(identifierId, file, settings_sheet)
     equipment = create_dict(equipment, model)
     filePaths = create_file_paths_dict(filePathsCells)
     readODWavelength = get_single_value(readODId, file, data_sheet)
 
+
     experimentDateAndTime = create_experiment_date_and_time_dict(experimentDateAndTimeCells)
     readInfo = create_read_info_dict(readODWavelength, readGFPCells, readRFPCells)
     procedure_details = create_procedure_details_dict(procedureCells, readInfo)
+    wellsInfo = create_wells_dict(wellCells, wellInfoCells)
 
     settings = []
     settings = generate_nested_list(settings, settingsCells)
@@ -80,6 +86,7 @@ def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, 
     settings = append_single_value_to_nested_list(settings, str(filePaths))
     settings = append_single_value_to_nested_list(settings, str(experimentDateAndTime))
     settings = append_single_value_to_nested_list(settings, str(procedure_details))
+    settings = append_single_value_to_nested_list(settings, str(wellsInfo))
 
     data_values = create_data_dict(odCells, gfpCells, rfpCells)
     time = create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells)
@@ -122,10 +129,12 @@ def create_experiment_date_and_time_dict(experimentDateAndTimeCells):
     return add_to_dict(experiment_date_and_time_dict, "Time",
                        experimentDateAndTimeCells[1][0].value.strftime("%H:%M:%S"))
 
+
 def create_temperature_dict(odTemperatureCells, gfpTemperatureCells, rfpTemperatureCells):
     temperature_dict = create_dict("OD", odTemperatureCells)
     temperature_dict = add_to_dict(temperature_dict, "GFP", gfpTemperatureCells)
     return add_to_dict(temperature_dict, "RFP", rfpTemperatureCells)
+
 
 def create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells):
     odTime = []
@@ -139,6 +148,7 @@ def create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells):
     time_dict = add_to_dict(time_dict, "GFP", gfpTime)
     return add_to_dict(time_dict, "RFP", rfpTime)
 
+
 def create_data_dict(odCells, gfpCells, rfpCells):
     odValues = []
     odValues = generate_nested_list(odValues, odCells)
@@ -149,9 +159,10 @@ def create_data_dict(odCells, gfpCells, rfpCells):
     rfpValues = []
     rfpValues = generate_nested_list(rfpValues, rfpCells)
     rfpValues = append_to_nested_list(rfpValues, rfpCells)
-    data_dict = create_dict("OD" , odValues)
+    data_dict = create_dict("OD", odValues)
     data_dict = add_to_dict(data_dict, "GFP", gfpValues)
     return add_to_dict(data_dict, "RFP", rfpValues)
+
 
 def create_read_info_dict(readODWavelength, readGFPCells, readRFPCells):
     read_info_dict = create_dict("OD", create_dict("Wavelength", extract_int_as_string(readODWavelength)))
@@ -171,7 +182,12 @@ def create_procedure_details_dict(procedureCells, readInfo):
 
     return add_to_dict(procedure_details_dict, "Read", readInfo)
 
+def create_wells_dict(wellCells, wellInfoCells):
+    wells_dict = {}
+    for i in range(len(wellCells[0])):
+        wells_dict = add_to_dict(wells_dict, wellCells[0][i].value, wellInfoCells[0][i].value)
 
+    return wells_dict
 def create_shake_dict(procedureCells):
     shake_dict = create_dict("Orbital", procedureCells[6][0].value.replace("Orbital: ", ""))
     return add_to_dict(shake_dict, "Frequency", procedureCells[7][0].value.replace("Frequency: ", ""))
@@ -264,11 +280,13 @@ def append_time_to_nested_list(formatted_cells, cells):
 
     return formatted_cells
 
+
 def append_time_to_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells.append(cells[i][0].value.strftime("%H:%M:%S"))
 
     return formatted_cells
+
 
 def append_identifier_to_nested_list(formatted_cells, cells, identifier):
     for i in range(len(cells)):
@@ -308,8 +326,8 @@ def add_to_settings(cells):
 
                            INSERT INTO
                            settings(experimental_id, measurement, experiment_type, temperature, media, plasmid_name, 
-                           equipment, filepath, date, procedure_details )
-                           VALUES(?,?,?,?,?,?,?,?,?,?)""", cells)
+                           equipment, filepath, date, procedure_details, wells_info )
+                           VALUES(?,?,?,?,?,?,?,?,?,?,?)""", cells)
 
     connection.commit()
     connection.close()
@@ -355,13 +373,14 @@ def create_table(db):
         Column('Equipment', String),
         Column('Filepath', String),
         Column('Date', String),
-        Column('procedure_details', String)
-
+        Column('procedure_details', String),
+        Column('wells_info', String)
     )
     meta.create_all(engine)
 
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "100", "132", "137", "169", "Microplate reader", "Cytation 5", "B25", "B31", "B32",
+    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "100", "132", "137", "169", "Microplate reader",
+         "Cytation 5", "B25", "B31", "B32",
          "B40", "B41")
