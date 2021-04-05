@@ -73,7 +73,6 @@ def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, 
     filePaths = create_file_paths_dict(filePathsCells)
     readODWavelength = get_single_value(readODId, file, data_sheet)
 
-
     experimentDateAndTime = create_experiment_date_and_time_dict(experimentDateAndTimeCells)
     readInfo = create_read_info_dict(readODWavelength, readGFPCells, readRFPCells)
     procedure_details = create_procedure_details_dict(procedureCells, readInfo)
@@ -99,8 +98,102 @@ def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, 
     formatted_cells = append_single_value_to_nested_list(formatted_cells, odTemperatureCells)
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_values))
 
+    # data_id = {}
+    # ids = ["63", "95"]
+    # data_id["OD"] = ids
+    # data_id["RFP"] = ["1", "2"]
+    # for key, value in data_id.items():
+    #     print(value, key)
+
+    # add_to_database(formatted_cells)
+    # add_to_settings(settings)
+
+
+def read_test(file, first_col_id, last_col_id, data_ids, equipment, model, readODWavelengthId,
+              readGFPExcitationEmissionId, readGFPGainId,
+              readRFPExcitationEmissionId, readRFPGainId):
+    data_dict = {}
+    time_dict = {}
+    temperature_dict = {}
+
+    filePathsId = ("B4", "B5")
+    procedureCellsId = ("B14", "B21")
+    readODId = (readODWavelengthId, readODWavelengthId)
+    readGFPId = (readGFPExcitationEmissionId, readGFPGainId)
+    readRFPId = (readRFPExcitationEmissionId, readRFPGainId)
+    experimentDateAndTimeId = ("B7", "B8")
+    settingsId = ('A2', 'F2')
+    identifierId = ('A2', 'A2')
+    wellId = ('A1', 'CR1')
+    wellInfoId = ('A2', 'CR2')
+    data_sheet = 'Data'
+    settings_sheet = 'Metadata'
+    well_sheet = 'Well Information'
+
+    settingsCells = get_cells(file, settingsId, settings_sheet)
+    filePathsCells = get_cells(file, filePathsId, data_sheet)
+    experimentDateAndTimeCells = get_cells(file, experimentDateAndTimeId, data_sheet)
+    procedureCells = get_cells(file, procedureCellsId, data_sheet)
+    readGFPCells = get_cells(file, readGFPId, data_sheet)
+    readRFPCells = get_cells(file, readRFPId, data_sheet)
+    wellCells = get_cells(file, wellId, well_sheet)
+    wellInfoCells = get_cells(file, wellInfoId, well_sheet)
+    identifier = get_identifier(identifierId, file, settings_sheet)
+    equipment = create_dict(equipment, model)
+    filePaths = create_file_paths_dict(filePathsCells)
+    readODWavelength = get_single_value(readODId, file, data_sheet)
+
+    experimentDateAndTime = create_experiment_date_and_time_dict(experimentDateAndTimeCells)
+    readInfo = create_read_info_dict(readODWavelength, readGFPCells, readRFPCells)
+    procedure_details = create_procedure_details_dict(procedureCells, readInfo)
+    wellsInfo = create_wells_dict(wellCells, wellInfoCells)
+
+    for key, value in data_ids.items():
+        read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_dict, time_dict, temperature_dict)
+
+    settings = []
+    settings = generate_nested_list(settings, settingsCells)
+    settings = append_to_nested_list(settings, settingsCells)
+    settings = append_single_value_to_nested_list(settings, str(equipment))
+    settings = append_single_value_to_nested_list(settings, str(filePaths))
+    settings = append_single_value_to_nested_list(settings, str(experimentDateAndTime))
+    settings = append_single_value_to_nested_list(settings, str(procedure_details))
+    settings = append_single_value_to_nested_list(settings, str(wellsInfo))
+
+    formatted_cells = []
+    formatted_cells = generate_single_nested_list(formatted_cells)
+    formatted_cells = append_single_value_to_nested_list(formatted_cells, identifier)
+    formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(time_dict))
+    formatted_cells = append_single_value_to_nested_list(formatted_cells, str(temperature_dict))
+    formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_dict))
+
+    print(len(formatted_cells[0]))
     add_to_database(formatted_cells)
     add_to_settings(settings)
+
+
+def read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_dict, time_dict, temperature_dict):
+    first_row_id = value[0]
+    last_row_id = value[1]
+    data_cells_id = (get_cellId(offset_col(first_col_id, 2), first_row_id), get_cellId(last_col_id, last_row_id))
+    time_cells_id = (get_cellId(first_col_id, first_row_id), get_cellId(first_col_id, last_row_id))
+    temp_cells_id = (
+        get_cellId(offset_col(first_col_id, 1), first_row_id), get_cellId(offset_col(first_col_id, 1), first_row_id))
+
+    data_cells = get_cells(file, data_cells_id, data_sheet)
+    time_cells = get_cells(file, time_cells_id, data_sheet)
+    temperature_cells = get_single_value(temp_cells_id, file, data_sheet)
+
+    data = []
+    data = generate_nested_list(data, data_cells)
+    data = append_to_nested_list(data, data_cells)
+    data_dict[key] = data
+
+    time = []
+    time = append_time_to_list(time, time_cells)
+    time_dict[key] = time
+
+    temperature_dict[key] = temperature_cells
 
 
 def offset_col(char, offset):
@@ -182,12 +275,15 @@ def create_procedure_details_dict(procedureCells, readInfo):
 
     return add_to_dict(procedure_details_dict, "Read", readInfo)
 
+
 def create_wells_dict(wellCells, wellInfoCells):
     wells_dict = {}
     for i in range(len(wellCells[0])):
         wells_dict = add_to_dict(wells_dict, wellCells[0][i].value, wellInfoCells[0][i].value)
 
     return wells_dict
+
+
 def create_shake_dict(procedureCells):
     shake_dict = create_dict("Orbital", procedureCells[6][0].value.replace("Orbital: ", ""))
     return add_to_dict(shake_dict, "Frequency", procedureCells[7][0].value.replace("Frequency: ", ""))
@@ -381,6 +477,15 @@ def create_table(db):
 
 # Enable the script to be run from the command line
 if __name__ == "__main__":
-    read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "100", "132", "137", "169", "Microplate reader",
-         "Cytation 5", "B25", "B31", "B32",
-         "B40", "B41")
+    data_id = {}
+    ids = ["63", "95"]
+    data_id["OD"] = ids
+    data_id["GFP"] = ["100", "132"]
+    data_id["RFP"] = ["137", "169"]
+
+    read_test("cytation_H1_plate1.xlsx", "B", "CU", data_id, "Microplate reader",
+              "Cytation 5", "B25", "B31", "B32", "B40", "B41")
+
+    # read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "100", "132", "137", "169", "Microplate reader",
+    #      "Cytation 5", "B25", "B31", "B32",
+    #      "B40", "B41")
