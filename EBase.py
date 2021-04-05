@@ -20,96 +20,8 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-def read(file, odFirstRowId, firstColId, odLastRowId, lastColId, gfpFirstRowId, gfpLastRowId,
-         rfpFirstRowId, rfpLastRowId, equipment, model, readODWavelengthId, readGFPExcitationEmissionId, readGFPGainId,
-         readRFPExcitationEmissionId, readRFPGainId):
-    # read original data from microplate reader
-    # file = 'cytation_H1_plate1_OD600.xlsx'
-    odCellsId = (get_cellId(offset_col(firstColId, 2), odFirstRowId), get_cellId(lastColId, odLastRowId))
-    odTimeCellsId = (get_cellId(firstColId, odFirstRowId), get_cellId(firstColId, odLastRowId))
-    odTemperatureCellsId = (
-        get_cellId(offset_col(firstColId, 1), odFirstRowId), get_cellId(offset_col(firstColId, 1), odFirstRowId))
-    gfpCellsId = (get_cellId(offset_col(firstColId, 2), gfpFirstRowId), get_cellId(lastColId, gfpLastRowId))
-    gfpTimeCellsId = (get_cellId(firstColId, gfpFirstRowId), get_cellId(firstColId, gfpLastRowId))
-    gfpTemperatureCellsId = (
-        get_cellId(offset_col(firstColId, 1), gfpFirstRowId), get_cellId(offset_col(firstColId, 1), gfpFirstRowId))
-    rfpCellsId = (get_cellId(offset_col(firstColId, 2), rfpFirstRowId), get_cellId(lastColId, rfpLastRowId))
-    rfpTimeCellsId = (get_cellId(firstColId, rfpFirstRowId), get_cellId(firstColId, rfpLastRowId))
-    rfpTemperatureCellsId = (
-        get_cellId(offset_col(firstColId, 1), rfpFirstRowId), get_cellId(offset_col(firstColId, 1), rfpFirstRowId))
-    filePathsId = ("B4", "B5")
-    procedureCellsId = ("B14", "B21")
-    readODId = (readODWavelengthId, readODWavelengthId)
-    readGFPId = (readGFPExcitationEmissionId, readGFPGainId)
-    readRFPId = (readRFPExcitationEmissionId, readRFPGainId)
-    experimentDateAndTimeId = ("B7", "B8")
-    settingsId = ('A2', 'F2')
-    identifierId = ('A2', 'A2')
-    wellId = ('A1', 'CR1')
-    wellInfoId = ('A2', 'CR2')
-    data_sheet = 'Data'
-    settings_sheet = 'Metadata'
-    well_sheet = 'Well Information'
 
-    settingsCells = get_cells(file, settingsId, settings_sheet)
-    filePathsCells = get_cells(file, filePathsId, data_sheet)
-    experimentDateAndTimeCells = get_cells(file, experimentDateAndTimeId, data_sheet)
-    procedureCells = get_cells(file, procedureCellsId, data_sheet)
-    readGFPCells = get_cells(file, readGFPId, data_sheet)
-    readRFPCells = get_cells(file, readRFPId, data_sheet)
-    odCells = get_cells(file, odCellsId, data_sheet)
-    odTimeCells = get_cells(file, odTimeCellsId, data_sheet)
-    odTemperatureCells = get_single_value(odTemperatureCellsId, file, data_sheet)
-    gfpCells = get_cells(file, gfpCellsId, data_sheet)
-    gfpTimeCells = get_cells(file, gfpTimeCellsId, data_sheet)
-    gfpTemperatureCells = get_single_value(gfpTemperatureCellsId, file, data_sheet)
-    rfpCells = get_cells(file, rfpCellsId, data_sheet)
-    rfpTimeCells = get_cells(file, rfpTimeCellsId, data_sheet)
-    rfpTemperatureCells = get_single_value(rfpTemperatureCellsId, file, data_sheet)
-    wellCells = get_cells(file, wellId, well_sheet)
-    wellInfoCells = get_cells(file, wellInfoId, well_sheet)
-    identifier = get_identifier(identifierId, file, settings_sheet)
-    equipment = create_dict(equipment, model)
-    filePaths = create_file_paths_dict(filePathsCells)
-    readODWavelength = get_single_value(readODId, file, data_sheet)
-
-    experimentDateAndTime = create_experiment_date_and_time_dict(experimentDateAndTimeCells)
-    readInfo = create_read_info_dict(readODWavelength, readGFPCells, readRFPCells)
-    procedure_details = create_procedure_details_dict(procedureCells, readInfo)
-    wellsInfo = create_wells_dict(wellCells, wellInfoCells)
-
-    settings = []
-    settings = generate_nested_list(settings, settingsCells)
-    settings = append_to_nested_list(settings, settingsCells)
-    settings = append_single_value_to_nested_list(settings, str(equipment))
-    settings = append_single_value_to_nested_list(settings, str(filePaths))
-    settings = append_single_value_to_nested_list(settings, str(experimentDateAndTime))
-    settings = append_single_value_to_nested_list(settings, str(procedure_details))
-    settings = append_single_value_to_nested_list(settings, str(wellsInfo))
-
-    data_values = create_data_dict(odCells, gfpCells, rfpCells)
-    time = create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells)
-    temperature = create_temperature_dict(odTemperatureCells, gfpTemperatureCells, rfpTemperatureCells)
-
-    formatted_cells = []
-    formatted_cells = generate_single_nested_list(formatted_cells)
-    formatted_cells = append_single_value_to_nested_list(formatted_cells, identifier)
-    formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(time))
-    formatted_cells = append_single_value_to_nested_list(formatted_cells, odTemperatureCells)
-    formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_values))
-
-    # data_id = {}
-    # ids = ["63", "95"]
-    # data_id["OD"] = ids
-    # data_id["RFP"] = ["1", "2"]
-    # for key, value in data_id.items():
-    #     print(value, key)
-
-    # add_to_database(formatted_cells)
-    # add_to_settings(settings)
-
-
-def read_test(file, first_col_id, last_col_id, data_ids, equipment, model, readODWavelengthId,
+def read(file, first_col_id, last_col_id, data_ids, equipment, model, readODWavelengthId,
               readGFPExcitationEmissionId, readGFPGainId,
               readRFPExcitationEmissionId, readRFPGainId):
     data_dict = {}
@@ -167,7 +79,6 @@ def read_test(file, first_col_id, last_col_id, data_ids, equipment, model, readO
     formatted_cells = append_single_value_to_nested_list(formatted_cells, str(temperature_dict))
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_dict))
 
-    print(len(formatted_cells[0]))
     add_to_database(formatted_cells)
     add_to_settings(settings)
 
@@ -483,9 +394,6 @@ if __name__ == "__main__":
     data_id["GFP"] = ["100", "132"]
     data_id["RFP"] = ["137", "169"]
 
-    read_test("cytation_H1_plate1.xlsx", "B", "CU", data_id, "Microplate reader",
+    read("cytation_H1_plate1.xlsx", "B", "CU", data_id, "Microplate reader",
               "Cytation 5", "B25", "B31", "B32", "B40", "B41")
 
-    # read("cytation_H1_plate1.xlsx", "63", "B", "95", "CU", "100", "132", "137", "169", "Microplate reader",
-    #      "Cytation 5", "B25", "B31", "B32",
-    #      "B40", "B41")

@@ -68,59 +68,108 @@ class EBasePage(tk.Frame):
         self.firstColId.set("")
         self.lastColId = tk.StringVar()
         self.lastColId.set("")
-        self.odFirstRowId = tk.StringVar()
-        self.odFirstRowId.set("")
-        self.odLastRowId = tk.StringVar()
-        self.odLastRowId.set("")
-        self.gfpFirstRowId = tk.StringVar()
-        self.gfpFirstRowId.set("")
-        self.gfpLastRowId = tk.StringVar()
-        self.gfpLastRowId.set("")
-        self.rfpFirstRowId = tk.StringVar()
-        self.rfpFirstRowId.set("")
-        self.rfpLastRowId = tk.StringVar()
-        self.rfpLastRowId.set("")
 
         firstColId_label = tk.Label(self, text="First Col")
         ent_firstColId = tk.Entry(self, textvariable=self.firstColId, width=50)
         lastColId_label = tk.Label(self, text="Last Col")
         ent_lastColId = tk.Entry(self, textvariable=self.lastColId, width=50)
-        odFirstRowId_label = tk.Label(self, text="OD First Row")
-        ent_odFirstRowId = tk.Entry(self, textvariable=self.odFirstRowId, width=50)
-        odLastRowId_label = tk.Label(self, text="OD Last Row")
-        ent_odLastRowId = tk.Entry(self, textvariable=self.odLastRowId, width=50)
-        gfpFirstRowId_label = tk.Label(self, text="GFP First Row")
-        ent_gfpFirstRowId = tk.Entry(self, textvariable=self.gfpFirstRowId, width=50)
-        gfpLastRowId_label = tk.Label(self, text="GFP Last Row")
-        ent_gfpLastRowId = tk.Entry(self, textvariable=self.gfpLastRowId, width=50)
-        rfpFirstRowId_label = tk.Label(self, text="RFP First Row")
-        ent_rfpFirstRowId = tk.Entry(self, textvariable=self.rfpFirstRowId, width=50)
-        rfpLastRowId_label = tk.Label(self, text="RFP Last Row")
-        ent_rfpLastRowId = tk.Entry(self, textvariable=self.rfpLastRowId, width=50)
+        firstRowId_label = tk.Label(self, text="First Row")
+        ent_firstRowId = tk.Entry(self, width=50)
+        lastRowId_label = tk.Label(self, text="Last Row")
+        ent_lastRowId = tk.Entry(self, width=50)
 
-        firstColId_label.grid(row=0, column=0, sticky="e")
-        ent_firstColId.grid(row=0, column=1)
-        lastColId_label.grid(row=1, column=0, sticky="e")
-        ent_lastColId.grid(row=1, column=1)
-        odFirstRowId_label.grid(row=2, column=0, sticky="e")
-        ent_odFirstRowId.grid(row=2, column=1)
-        odLastRowId_label.grid(row=3, column=0, sticky="e")
-        ent_odLastRowId.grid(row=3, column=1)
-        gfpFirstRowId_label.grid(row=4, column=0, sticky="e")
-        ent_gfpFirstRowId.grid(row=4, column=1)
-        gfpLastRowId_label.grid(row=5, column=0, sticky="e")
-        ent_gfpLastRowId.grid(row=5, column=1)
-        rfpFirstRowId_label.grid(row=6, column=0, sticky="e")
-        ent_rfpFirstRowId.grid(row=6, column=1)
-        rfpLastRowId_label.grid(row=7, column=0, sticky="e")
-        ent_rfpLastRowId.grid(row=7, column=1)
+
+        firstColId_label.grid(row=1, column=0, sticky="e")
+        ent_firstColId.grid(row=1, column=1)
+        lastColId_label.grid(row=2, column=0, sticky="e")
+        ent_lastColId.grid(row=2, column=1)
+        firstRowId_label.grid(row=4, column=0, sticky="e")
+        ent_firstRowId.grid(row=4, column=1)
+        lastRowId_label.grid(row=5, column=0, sticky="e")
+        ent_lastRowId.grid(row=5, column=1)
+
+
+        OPTIONS = [
+            "OD",
+            "GFP",
+            "RFP"
+        ]
+
+        variable = tk.StringVar()
+        variable.set(OPTIONS[0])  # default value
+
+        w = tk.OptionMenu(self, variable, *OPTIONS)
+        w.grid(row=3, column=1)
+
+        global data_dict
+        data_dict = {}
+
+        global expList
+        global firstRowList
+        global lastRowList
+
+        expList = []
+        firstRowList = []
+        lastRowList = []
+        global next_row
+        next_row = 6
+        addboxButton = tk.Button(self, text='<Add Data Input>', fg="Red",
+                                 command=lambda: self.addBox(expList, firstRowList, lastRowList))
+        addboxButton.grid(row=3, column=0)
 
         nextButton = tk.Button(self, width=30, text="Next",
-                               command=lambda: controller.show_frame("EBasePageTwo"))
-        nextButton.grid(row=8, column=0, sticky="se")
+                               command=lambda: self.submit(controller, variable, ent_firstRowId, ent_lastRowId, expList, firstRowList, lastRowList))
+        nextButton.grid(row=0, column=0, sticky="se")
         button = tk.Button(self, width=30, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
-        button.grid(row=8, column=1, sticky="se")
+        button.grid(row=0, column=1, sticky="se")
+
+    def submit(self, controller, variable, ent_firstRowId, ent_lastRowId, expList, firstRowList, lastRowList):
+        self.addDict(variable, ent_firstRowId, ent_lastRowId, expList, firstRowList, lastRowList)
+        controller.show_frame("EBasePageTwo")
+
+    def addBox(self, expList, firstRowList, lastRowList):
+        global next_row
+
+        OPTIONS = [
+            "OD",
+            "GFP",
+            "RFP"
+        ]
+
+        variable = tk.StringVar()
+        variable.set(OPTIONS[0])  # default value
+
+        w = tk.OptionMenu(self, variable, *OPTIONS)
+        w.grid(row=next_row, column=1)
+
+        # add label in first column
+        firstRowLabel = tk.Label(self, text="First Row")
+        firstRowLabel.grid(row=next_row + 1, column=0, sticky="e")
+
+        # add entry in second column
+        ent_firstRow = tk.Entry(self, width=50)
+        ent_firstRow.grid(row=next_row + 1, column=1)
+
+        # add label in first column
+        lastRowLabel = tk.Label(self, text="Last Row")
+        lastRowLabel.grid(row=next_row + 2, column=0, sticky="e")
+
+        # add entry in second column
+        ent_lastRow = tk.Entry(self, width=50)
+        ent_lastRow.grid(row=next_row + 2, column=1)
+
+        expList.append(variable)
+        firstRowList.append(ent_firstRow)
+        lastRowList.append(ent_lastRow)
+
+        next_row += 3
+
+    def addDict(self, variable, ent_firstRowId, ent_lastRowId, expList, firstRowList, lastRowList):
+        global data_dict
+        data_dict[variable.get()] = [ent_firstRowId.get(), ent_lastRowId.get()]
+        for i in range(len(expList)):
+            data_dict[expList[i].get()] = [firstRowList[i].get(), lastRowList[i].get()]
 
 
 class EBasePageTwo(tk.Frame):
@@ -201,9 +250,9 @@ class EBasePageTwo(tk.Frame):
     def add_to_ebase(self, filename, controller, page1, equipment, model, readODWavelengthId,
                      readGFPExcitationEmissionId,
                      readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
-        EBase.read(filename, page1.odFirstRowId.get(), page1.firstColId.get(), page1.odLastRowId.get(),
-                   page1.lastColId.get(), page1.gfpFirstRowId.get(), page1.gfpLastRowId.get(),
-                   page1.rfpFirstRowId.get(), page1.rfpLastRowId.get(), equipment, model, readODWavelengthId,
+        global data_dict
+
+        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment, model, readODWavelengthId,
                    readGFPExcitationEmissionId, readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
 
 
