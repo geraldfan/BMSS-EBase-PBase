@@ -51,12 +51,24 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="Select the database", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
+        OPTIONS = [
+            "Microplate reader"
+        ]
+        global equipment
+        equipment = tk.StringVar()
+        equipment.set(OPTIONS[0])  # default value
+
+        w = tk.OptionMenu(self, equipment, *OPTIONS)
+        w.pack()
         button1 = tk.Button(self, text="EBase",
                             command=lambda: controller.show_frame("EBasePage"))
         button2 = tk.Button(self, text="PBase",
                             command=lambda: controller.show_frame("PBasePage"))
         button1.pack()
         button2.pack()
+
+    # def go_to_EBase(self, controller, equipment):
+    #     controller.show_frame("EBasePage")
 
 
 class EBasePage(tk.Frame):
@@ -242,17 +254,17 @@ class EBasePageTwo(tk.Frame):
         fTyp = [('', '* .xlsx')]
         iDir = r'path to the folder you want to reference'
         filename = filedialog.askopenfilename(filetype=fTyp, initialdir=iDir)
-        self.add_to_ebase(filename, controller, page1, equipment, model, readODWavelengthId,
+        self.add_to_ebase(filename, controller, page1, model, readODWavelengthId,
                           readGRFPExcitationEmissionId,
                           readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
         controller.show_frame("SuccessPage")
 
-    def add_to_ebase(self, filename, controller, page1, equipment, model, readODWavelengthId,
+    def add_to_ebase(self, filename, controller, page1, model, readODWavelengthId,
                      readGFPExcitationEmissionId,
                      readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
         global data_dict
-
-        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment, model, readODWavelengthId,
+        global equipment
+        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment.get(), model, readODWavelengthId,
                    readGFPExcitationEmissionId, readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
 
 
