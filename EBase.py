@@ -20,10 +20,9 @@ import openpyxl
 from sqlalchemy import create_engine, MetaData, Table, Column, String
 
 
-
-def read(file, first_col_id, last_col_id, data_ids, equipment, model, readODWavelengthId,
-              readGFPExcitationEmissionId, readGFPGainId,
-              readRFPExcitationEmissionId, readRFPGainId):
+def read(file, first_col_id, last_col_id, data_ids, equipment, readODWavelengthId,
+         readGFPExcitationEmissionId, readGFPGainId,
+         readRFPExcitationEmissionId, readRFPGainId):
     data_dict = {}
     time_dict = {}
     temperature_dict = {}
@@ -33,6 +32,7 @@ def read(file, first_col_id, last_col_id, data_ids, equipment, model, readODWave
     readODId = (readODWavelengthId, readODWavelengthId)
     readGFPId = (readGFPExcitationEmissionId, readGFPGainId)
     readRFPId = (readRFPExcitationEmissionId, readRFPGainId)
+    modelId = ("B9", "B9")
     experimentDateAndTimeId = ("B7", "B8")
     settingsId = ('A2', 'F2')
     identifierId = ('A2', 'A2')
@@ -50,6 +50,7 @@ def read(file, first_col_id, last_col_id, data_ids, equipment, model, readODWave
     readRFPCells = get_cells(file, readRFPId, data_sheet)
     wellCells = get_cells(file, wellId, well_sheet)
     wellInfoCells = get_cells(file, wellInfoId, well_sheet)
+    model = get_single_value(modelId, file, data_sheet)
     identifier = get_identifier(identifierId, file, settings_sheet)
     equipment = create_dict(equipment, model)
     filePaths = create_file_paths_dict(filePathsCells)
@@ -395,5 +396,4 @@ if __name__ == "__main__":
     data_id["RFP"] = ["137", "169"]
 
     read("cytation_H1_plate1.xlsx", "B", "CU", data_id, "Microplate reader",
-              "Cytation 5", "B25", "B31", "B32", "B40", "B41")
-
+         "B25", "B31", "B32", "B40", "B41")

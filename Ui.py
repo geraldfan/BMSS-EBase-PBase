@@ -90,7 +90,6 @@ class EBasePage(tk.Frame):
         lastRowId_label = tk.Label(self, text="Last Row")
         ent_lastRowId = tk.Entry(self, width=50)
 
-
         firstColId_label.grid(row=1, column=0, sticky="e")
         ent_firstColId.grid(row=1, column=1)
         lastColId_label.grid(row=2, column=0, sticky="e")
@@ -99,7 +98,6 @@ class EBasePage(tk.Frame):
         ent_firstRowId.grid(row=4, column=1)
         lastRowId_label.grid(row=5, column=0, sticky="e")
         ent_lastRowId.grid(row=5, column=1)
-
 
         OPTIONS = [
             "OD",
@@ -130,7 +128,8 @@ class EBasePage(tk.Frame):
         addboxButton.grid(row=3, column=0)
 
         nextButton = tk.Button(self, width=30, text="Next",
-                               command=lambda: self.submit(controller, variable, ent_firstRowId, ent_lastRowId, expList, firstRowList, lastRowList))
+                               command=lambda: self.submit(controller, variable, ent_firstRowId, ent_lastRowId, expList,
+                                                           firstRowList, lastRowList))
         nextButton.grid(row=0, column=0, sticky="se")
         button = tk.Button(self, width=30, text="Go to the start page",
                            command=lambda: controller.show_frame("StartPage"))
@@ -205,10 +204,6 @@ class EBasePageTwo(tk.Frame):
 
         page1 = self.controller.get_page("EBasePage")
 
-        equipment_label = tk.Label(self, text="Equipment")
-        ent_equipment = tk.Entry(self, textvariable=self.equipment, width=50)
-        model_label = tk.Label(self, text="Model")
-        ent_model = tk.Entry(self, textvariable=self.model, width=50)
         readODWavelengthId_label = tk.Label(self, text="OD Read Wavelength Cell")
         ent_readODWavelengthId = tk.Entry(self, textvariable=self.readODWavelengthId, width=50)
         readGFPExcitationEmissionId_label = tk.Label(self, text="GFP Read Excitation Emission Cell")
@@ -220,10 +215,6 @@ class EBasePageTwo(tk.Frame):
         readRFPGainId_label = tk.Label(self, text="RFP Read Gain Cell")
         ent_readRFPGainId = tk.Entry(self, textvariable=self.readRFPGainId, width=50)
 
-        equipment_label.grid(row=0, column=0, sticky="e")
-        ent_equipment.grid(row=0, column=1)
-        model_label.grid(row=1, column=0, sticky="e")
-        ent_model.grid(row=1, column=1)
         readODWavelengthId_label.grid(row=2, column=0, sticky="e")
         ent_readODWavelengthId.grid(row=2, column=1)
         readGFPExcitationEmissionId_label.grid(row=3, column=0, sticky="e")
@@ -236,7 +227,7 @@ class EBasePageTwo(tk.Frame):
         ent_readRFPGainId.grid(row=6, column=1)
 
         button = tk.Button(self, width=30, text="Select file and Add to database",
-                           command=lambda: self.file_select(controller, page1, ent_equipment.get(), ent_model.get(),
+                           command=lambda: self.file_select(controller, page1,
                                                             ent_readODWavelengthId.get(),
                                                             ent_readGFPExcitationEmissionId.get(),
                                                             ent_readGFPGainId.get(),
@@ -247,24 +238,25 @@ class EBasePageTwo(tk.Frame):
                            command=lambda: controller.show_frame("StartPage"))
         button.grid(row=7, column=1, sticky="se")
 
-    def file_select(self, controller, page1, equipment, model, readODWavelengthId, readGRFPExcitationEmissionId,
+    def file_select(self, controller, page1, readODWavelengthId, readGRFPExcitationEmissionId,
                     readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
         root = tk.Tk()
         root.withdraw()
         fTyp = [('', '* .xlsx')]
         iDir = r'path to the folder you want to reference'
         filename = filedialog.askopenfilename(filetype=fTyp, initialdir=iDir)
-        self.add_to_ebase(filename, controller, page1, model, readODWavelengthId,
+        self.add_to_ebase(filename, controller, page1, readODWavelengthId,
                           readGRFPExcitationEmissionId,
                           readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
         controller.show_frame("SuccessPage")
 
-    def add_to_ebase(self, filename, controller, page1, model, readODWavelengthId,
+    def add_to_ebase(self, filename, controller, page1, readODWavelengthId,
                      readGFPExcitationEmissionId,
                      readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
         global data_dict
         global equipment
-        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment.get(), model, readODWavelengthId,
+        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment.get(), 
+                   readODWavelengthId,
                    readGFPExcitationEmissionId, readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
 
 
