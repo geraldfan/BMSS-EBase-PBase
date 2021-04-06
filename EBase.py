@@ -26,6 +26,7 @@ def read(file, first_col_id, last_col_id, data_ids, equipment, readODWavelengthI
     data_dict = {}
     time_dict = {}
     temperature_dict = {}
+    read_dict = {}
 
     filePathsId = ("B4", "B5")
     procedureCellsId = ("B14", "B21")
@@ -57,12 +58,12 @@ def read(file, first_col_id, last_col_id, data_ids, equipment, readODWavelengthI
     readODWavelength = get_single_value(readODId, file, data_sheet)
 
     experimentDateAndTime = create_experiment_date_and_time_dict(experimentDateAndTimeCells)
-    readInfo = create_read_info_dict(readODWavelength, readGFPCells, readRFPCells)
-    procedure_details = create_procedure_details_dict(procedureCells, readInfo)
+    procedure_details = create_procedure_details_dict(procedureCells, read_dict)
     wellsInfo = create_wells_dict(wellCells, wellInfoCells)
 
     for key, value in data_ids.items():
-        read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_dict, time_dict, temperature_dict)
+        read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_dict, time_dict, temperature_dict,
+                    read_dict)
 
     settings = []
     settings = generate_nested_list(settings, settingsCells)
@@ -84,7 +85,8 @@ def read(file, first_col_id, last_col_id, data_ids, equipment, readODWavelengthI
     add_to_settings(settings)
 
 
-def read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_dict, time_dict, temperature_dict):
+def read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_dict, time_dict, temperature_dict,
+                read_dict):
     first_row_id = value[0]
     last_row_id = value[1]
     data_cells_id = (get_cellId(offset_col(first_col_id, 2), first_row_id), get_cellId(last_col_id, last_row_id))
@@ -106,6 +108,8 @@ def read_single(file, first_col_id, last_col_id, key, value, data_sheet, data_di
     time_dict[key] = time
 
     temperature_dict[key] = temperature_cells
+
+    read_dict = add_to_read_dict(file, data_sheet, read_dict, key, first_row_id)
 
 
 def offset_col(char, offset):
@@ -176,6 +180,59 @@ def create_read_info_dict(readODWavelength, readGFPCells, readRFPCells):
     rfp_dict = create_fp_dict(readRFPCells)
     read_info_dict = add_to_dict(read_info_dict, "RFP", str(rfp_dict))
     return read_info_dict
+
+
+def add_to_read_dict(file, data_sheet, read_dict, key, first_row_id):
+    read_id = ("A1", "B" + first_row_id)
+    read_cells = get_cells(file, read_id, data_sheet)
+    isRightExpType = False
+    isCompleted = False
+
+    for i in range(len(read_cells)):
+        for j in range(len(read_cells[0])):
+            isRightExpType = is_right_exp_type(isRightExpType, read_cells, i, j, key)
+            if (isRightExpType and not isCompleted):
+                if (is_add_read_cell(read_cells, i, j, key)):
+                    add_info_to_read_dict(read_dict, read_cells, i, j, key)
+                    isCompleted = True
+    return read_dict
+
+def add_info_to_read_dict(read_dict, read_cells, i, j, key):
+    if key == "OD" and "Wavelength" in read_cells[i][j].value:
+        info_dict = {}
+        info_dict["Wavelength"] = extract_int_as_string(read_cells[i][j].value)
+        read_dict[key] = info_dict
+    if key =="GFP" or key == "RFP" and "Excitation" in read_cells[i][j].value:
+        excitation_emissions = read_cells[i][j].value.split(",")
+        info_dict = {}
+        info_dict["Excitation"] = extract_int_as_string(excitation_emissions[0])
+        info_dict["Emission"] = extract_int_as_string(excitation_emissions[1])
+        info_dict["Gain"] = extract_int_as_string(read_cells[i+1][j].value)
+        read_dict[key] = info_dict
+
+
+def is_add_read_cell(read_cells, i, j, key):
+    if read_cells[i][j].value is None:
+        return False
+    if not isinstance(read_cells[i][j].value, str):
+        return False
+    if key == "OD" and "Wavelength" in read_cells[i][j].value:
+        return True
+    if (key =="GFP" or key == "RFP") and "Excitation" in read_cells[i][j].value:
+        return True
+
+    return False
+
+
+def is_right_exp_type(isRightExpType, read_cells, i, j, key):
+    if (isRightExpType):
+        return isRightExpType
+
+    if (str(read_cells[i][j].value).lower() == "read" and str(read_cells[i][j + 1].value) == key):
+        # print(read_cells[i][j].coordinate)
+        return True
+
+    return False
 
 
 def create_procedure_details_dict(procedureCells, readInfo):

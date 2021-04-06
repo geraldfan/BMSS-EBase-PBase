@@ -255,7 +255,7 @@ class EBasePageTwo(tk.Frame):
                      readGFPGainId, readRFPExcitationEmissionId, readRFPGainId):
         global data_dict
         global equipment
-        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment.get(), 
+        EBase.read(filename, page1.firstColId.get(), page1.lastColId.get(), data_dict, equipment.get(),
                    readODWavelengthId,
                    readGFPExcitationEmissionId, readGFPGainId, readRFPExcitationEmissionId, readRFPGainId)
 
