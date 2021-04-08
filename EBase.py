@@ -17,7 +17,7 @@ Created on Thu Feb 25 14:44:13 2021
 import sqlite3
 
 import openpyxl
-from sqlalchemy import create_engine, MetaData, Table, Column, String
+from sqlalchemy import create_engine, MetaData, Table, Column, String, ForeignKey, ForeignKeyConstraint
 
 
 def read(file, first_col_id, last_col_id, data_ids, equipment):
@@ -73,6 +73,7 @@ def read(file, first_col_id, last_col_id, data_ids, equipment):
     formatted_cells = append_single_value_to_nested_list(formatted_cells, str(temperature_dict))
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_dict))
 
+
     add_to_database(formatted_cells)
     add_to_settings(settings)
 
@@ -126,7 +127,7 @@ def create_file_paths_dict(filePathsCells):
 
 
 def create_experiment_date_and_time_dict(experimentDateAndTimeCells):
-    experiment_date_and_time_dict = create_dict("Date", experimentDateAndTimeCells[0][0].value.strftime("%d/%m/%Y"))
+    experiment_date_and_time_dict = create_dict("date", experimentDateAndTimeCells[0][0].value.strftime("%d/%m/%Y"))
     return add_to_dict(experiment_date_and_time_dict, "Time",
                        experimentDateAndTimeCells[1][0].value.strftime("%H:%M:%S"))
 
@@ -229,7 +230,7 @@ def is_right_exp_type(isRightExpType, read_cells, i, j, key):
 
 def create_procedure_details_dict(procedureCells, readInfo):
     procedure_details_dict = create_dict("Plate Type", procedureCells[0][0].value)
-    procedure_details_dict = add_to_dict(procedure_details_dict, "Set Temperature", procedureCells[2][0].value)
+    procedure_details_dict = add_to_dict(procedure_details_dict, "Set temperature", procedureCells[2][0].value)
     procedure_details_dict = add_to_dict(procedure_details_dict, "Start Kinetic", procedureCells[5][0].value)
     shake_dict = create_shake_dict(procedureCells)
     procedure_details_dict = add_to_dict(procedure_details_dict, "Shake", str(shake_dict))
@@ -367,7 +368,7 @@ def add_to_database(cells):
     connection.executemany("""
 
                            INSERT INTO
-                           data(experimental_id, time, set_temperature, data_values)
+                           data(id, time, set_temperature, data_values)
                            VALUES(?,?,?,?)""", cells)
 
     connection.commit()
@@ -382,7 +383,7 @@ def add_to_settings(cells):
     connection.executemany("""
 
                            INSERT INTO
-                           settings(experimental_id, measurement, experiment_type, temperature, media, plasmid_name, 
+                           settings(id, measurement, experiment_type, temperature, media, plasmid_name, 
                            equipment, filepath, date, procedure_details, wells_info )
                            VALUES(?,?,?,?,?,?,?,?,?,?,?)""", cells)
 
@@ -413,7 +414,7 @@ def create_table(db):
 
     data = Table(
         'data', meta,
-        Column('experimental_id', String, primary_key=True),
+        Column('id', String, primary_key=True),
         Column('time', String),
         Column('set_temperature', String),
         Column('data_values', String)
@@ -421,17 +422,18 @@ def create_table(db):
 
     settings = Table(
         'settings', meta,
-        Column('experimental_id', String, primary_key=True),
+        Column('id', String, primary_key=True),
         Column('measurement', String),
         Column('experiment_type', String),
-        Column('Temperature', String),
-        Column('Media', String),
+        Column('temperature', String),
+        Column('media', String),
         Column('plasmid_name', String),
-        Column('Equipment', String),
-        Column('Filepath', String),
-        Column('Date', String),
+        Column('equipment', String),
+        Column('filepath', String),
+        Column('date', String),
         Column('procedure_details', String),
-        Column('wells_info', String)
+        Column('wells_info', String),
+        ForeignKeyConstraint(['id'], ['data.id'])
     )
     meta.create_all(engine)
 

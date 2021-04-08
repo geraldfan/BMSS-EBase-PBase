@@ -1,0 +1,182 @@
+<doctype html>
+<head>
+    <title>BMSS Model Database</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styleguide.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/template.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}" type="text/css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/circuitdiagram.css') }}" type="text/css">
+    <link href="{{ url_for('static', filename='lib/font-awesome/css/font-awesome.min.css') }}" rel="stylesheet" type="text/css">
+
+</head>
+<body>
+    <!-- MENU FOR MOBILE - OFF CANVAS - START -->
+
+		<div id="nus-sidebar-off-canvas" class="nus-sidebar-off-canvas hidden-lg hidden-md off-canvas-effect-4 off-canvas-right">
+
+			<div class="header">
+
+				<h2>Sidebar</h2>
+
+				<button type="button" class="close" >×</button>
+
+			</div>
+
+			<div class="body">
+
+				<div class="nus-module module_menu">
+
+					<div class="module-inner">
+
+						<h3 class="title "><span>Main Menu</span></h3>
+
+						<div class="module-ct">
+
+							<ul class="nav nav-pills nav-stacked">
+
+								<li class="current active"><a href="http://bmss-test.herokuapp.com/">Home</a></li>
+
+
+
+							</ul>
+
+						</div>
+
+					</div>
+
+				</div>
+
+			</div>
+
+		</div>
+
+		<!-- MENU FOR MOBILE - OFF CANVAS - END -->
+		
+		<!-- NUS BODY CONTAINER - START -->
+		<div class="nus-body-container">
+
+			<div class="nus-wrapper">
+
+			
+
+				<!-- HEADER -->
+
+				<header class="nus-header"><!-- set 'microsite' to get #eee background. Otherwise, remove it to get #fff background -->
+
+					<div class="container">
+
+						<div class="row">
+
+							
+
+							<!-- LOGO SECTION - START -->
+
+							<div class="col-md-8 nus-logo clearfix">							
+
+								
+
+
+								
+								<!-- SUB-LOGO -->
+								<div class="nus-faculty-logo">
+									<a href="http://bmss-test.herokuapp.com/"><img src="{{ url_for('static', filename='images/BMSS_logo.PNG') }}" alt="SubLogo"></a>
+								</div>
+
+								
+
+							</div>
+
+							<!-- LOGO SECTION - END -->
+
+							
+
+							<div class="nus-mobile-nav hidden-lg hidden-md">
+
+								<ul>
+
+									<li><a class="faicon fa-search collapsed" data-toggle="collapse" data-target="#search-collapse" href="javascript:void(0)">&nbsp;</a></li>
+
+									<li><a class="faicon fa-mobile-menu btn-toggle off-canvas-toggle" data-pos="right" data-effect="off-canvas-effect-4" data-nav="#nus-sidebar-off-canvas" href="javascript:void(0)">&nbsp;</a></li>
+
+								</ul> 
+
+							</div>
+
+								
+
+						</div>
+
+					</div>
+
+				</header>
+
+				<!-- //HEADER -->
+
+				
+
+				<!-- MAIN NAVIGATION -->
+
+				<nav class="navbar navbar-default nus-main-nav hidden-xs hidden-sm">
+
+					<div class="container clearfix">
+
+						
+
+						<!-- MAIN MENU - NUS - START -->
+
+						<div class="nus-megamenu hidden-sm hidden-xs">
+
+							<ul class="nav navbar-nav level0">
+
+								<li class="current active" ><a class="" href="http://bmss-test.herokuapp.com/" data-target="#">Home</a></li>
+
+
+							</ul>
+
+						</div>
+
+						<!-- MAIN MENU - NUS - END -->
+
+						
+
+						
+
+					</div>
+
+				</nav>
+
+				<!-- //MAIN NAVIGATION -->
+
+				
+
+
+                
+                <!-- Genetic Circuit Diagram - START -->
+                                <p><p>
+                <div class="mbaseimage">
+                    <a href="https://github.com/EngBioNUS/BMSS2"><img src="{{ url_for('static', filename='images/search_image.png') }}" alt="SearchImage" width="500"></a>
+                </div>
+                <style>
+                    .mbaseimage {
+                        text-align: center;
+                    }
+                </style>
+
+                {% from "_formhelpers.html" import render_field %}
+                <form method=post style="text-align:center">
+                  <dl>
+                    {{ render_field(form.select) }}
+                    <p>
+                    {{ render_field(form.search) }}
+                  </dl>
+                  <p><input type=submit value=Search>
+                </form>
+                
+                    <img src="{{ url_for('static', filename='images/ANDgate.png') }}" alt="ANDgate" class = circuitdiagram>
+                <!-- Genetic Circuit Diagram - END -->
+                
+         	
+
+</body>
+

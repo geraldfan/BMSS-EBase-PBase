@@ -1,0 +1,209 @@
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 200;
+  line-height: 1.1;
+  color: inherit;
+}
+
+/***************
+	NUS - BANNER
+***************/	
+.nus-banner{padding:0;margin:0;background:#003d7c;font-size:14px;}
+.nus-banner img{max-width: none;}
+.nus-banner .btn-primary{background:#ef7c00;border-color:#ff6600;}
+
+.nus-banner .carousel{background-image:url(../images/background.png);background-size:cover;}
+.nus-banner .carousel .item{height:400px;}
+.nus-banner .faicon.fa-chevron-left:before{content:"\f053";color:#FFFFFF;position:absolute;top:50%;}
+.nus-banner .faicon.fa-chevron-right:before{content:"\f054";color:#FFFFFF;position:absolute;top:50%;}
+
+@media screen and (max-width:767px) {
+	.nus-banner{margin-bottom:30px;}
+}
+.nus-banner .carousel-caption{font-size:26px;left:20%;top:25%;width:80%;text-align:left;}
+.nus-banner .carousel-caption .carousel-caption-title{font-size:32px;left:10%;top:25%;width:80%;text-align:left;color:#ef7c00}
+.nus-banner .carousel-caption .carousel-caption-body{font-size:26px;left:10%;top:25%;width:80%;text-align:left;}
+.nus-banner .carousel-caption .carousel-caption-button{text-align:left;}
+.nus-banner .carousel-indicators{bottom: -6px;}
+
+.nus-components{margin-top:40px;margin-bottom:40px;}
+.nus-components.item-page2{min-height:500px;}
+.nus-components div[class*="col-"]{margin-bottom:30px;}
+.nus-components .page-header{margin-top:0;}
+.nus-components h2{margin:0 0 20px 0;}
+.nus-components .table2{border:0;}
+
+
+/***********************************
+	PEOPLE
+************************************/	
+.people{margin:40px 0 0 0;}
+.people img{width:100%;}
+.people .row > div{margin:0 0 20px 0;}
+
+@media screen and (max-width:767px) {
+	.people{margin:0 0 40px 0;}
+	.people .intro-image{text-align:center;}
+	.people img{width:inherit;}
+}
+.people ul{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.people h2{font-size:18px;font-weight:bold;color:#003D7C;margin:10px 0 10px 0;}
+.people h3{font-size:16px;font-weight:normal;color:#EF7C00;margin:8px 0 8px 0;}
+
+.people .icon{padding-right:15px;}
+
+.people .faicon.fa-phone:before{content:"\f095";color:#003D7C;}
+.people .faicon.fa-email:before{content:"\f0e0";color:#003D7C;}
+.people .faicon.fa-globe:before{content:"\f0ac";color:#003D7C;}
+
+.people-image{max-width:100%;}
+
+.past_members{margin:10px 0 40px 0;}
+.past_members h2{font-size:24px;font-weight:bold;margin:10px 0 10px 0;}
+.past_members p{font-size:16px;font-weight:normal;margin:0;}
+.past_members ul{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+.past_members li{
+	font-size:14px;
+	font-weight:normal;
+}
+
+/***********************************
+	RESEARCH
+************************************/
+.research{vertical-align:middle;margin: 40px 0}
+@media screen and (max-width:991px) {
+	.research{text-align:center;margin: 40px 0}
+} 
+.research .research-heading{font-size:30px;margin:0 0 8px 0;}
+.research .research-text{font-size:16px;margin:0 0 10px 0;}
+.research-divider{margin: 20px 0;}
+.research-image{max-width:100%;}
+
+.research-banner{padding:0;margin:0;background:#003d7c;font-size:14px;}
+.research-banner img{max-width: none;}
+.research-banner .btn-primary{background:#ef7c00;border-color:#ff6600;}
+.research-banner .carousel .item{height:300px;background:#003d7c;}
+@media screen and (max-width:767px) {
+	.research-banner{margin-bottom:30px;}
+}
+
+.research .faicon.fa-chevron-left:before{content:"\f053";color:#FFFFFF;position:absolute;top:50%;}
+.research .faicon.fa-chevron-right:before{content:"\f054";color:#FFFFFF;position:absolute;top:50%;}
+.research .carousel-caption{bottom:-12px;}
+.research .carousel-indicators{bottom: -6px;}
+
+/***********************************
+	PUBLICATIONS
+************************************/
+.publications ul{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+.publications li{
+	font-size:14px;
+	font-weight:normal;
+	margin: 0 0 8px 0;
+}
+.publications h3{margin:16px 0 6px 0;}
+
+/***********************************
+	SOFTWARE
+************************************/
+.software-page-header{margin:0 0 40px 0;}
+.software-page-header h2{margin-top: 30px;margin-bottom:20px;}
+.software-page-header p{margin-bottom:20px;}
+.software-text p{margin:25px 0 0 0;font-size:16px;}
+.software-divider{margin:0 0;width:60%;}
+.software-button a{margin: 14px 0 14px 0;}
+
+/***********************************
+	NEWS
+************************************/
+.news{vertical-align:middle;margin: 0 0}
+@media screen and (max-width:991px) {
+	.news{text-align:center;margin: 0 0}
+}
+.news .news-heading{font-size:20px;margin:0 0 10px 0;}
+.news .news-text{font-size:14px;margin:0 0 6px 0;text-align: justify;}
+.news-divider{margin:20px 0;}
+.news-image{max-width:100%;}.news-caldate-new{background: #ef7c00;    color: #003d7c;    font-size: 20px;    font-weight: 500;	text-align: center;}.news-calmonth-new{	background: #ef7c00;    color: #ffffff;    font-size: 16px;    font-weight: 600;    padding: 1px 0;    text-transform: uppercase;	text-align: center;}.news-caldate{background: #003d7c;    color: #ef7c00;    font-size: 20px;    font-weight: 500;	text-align: center;}.news-calmonth{	background: #003d7c;    color: #ffffff;    font-size: 16px;    font-weight: 600;    padding: 1px 0;    text-transform: uppercase;	text-align: center;}
+
+.news-banner{padding:0;margin:0;background:#003d7c;font-size:12px;}
+.news-banner img{max-width: none;}
+.news-banner .btn-primary{background:#ef7c00;border-color:#ff6600;}
+.news-banner .carousel .item{height:260px;background:#003d7c;}
+
+@media screen and (max-width:767px) {
+	.news-banner{margin-bottom:30px;}
+}
+
+.news .faicon.fa-chevron-left:before{content:"\f053";color:#FFFFFF;position:absolute;top:50%;}
+.news .faicon.fa-chevron-right:before{content:"\f054";color:#FFFFFF;position:absolute;top:50%;}
+.news .carousel-caption{bottom:-12px;}
+.news .carousel-indicators{bottom: -6px;}
+
+/***********************************
+	OPENINGS
+************************************/
+.openings-page-header{margin:0 0 40px 0;}
+
+/***********************************
+	CONTACT
+************************************/
+.contact{margin:40px 0;}
+.contact h2{font-size:20px;font-weight:bold;margin:10px 0 10px 0;}
+.contact p{font-size:16px;font-weight:normal;margin:0;}
+.contact ul{
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+.contact ul li{font-size:16px;position:relative;padding-left:30px;}
+.contact .icon{padding-right:15px;display:block;position:absolute;left:0;}
+.contact .faicon.fa-phone:before{content:"\f095";color:#003D7C;}
+.contact .faicon.fa-email:before{content:"\f0e0";color:#003D7C;}
+.contact .faicon.fa-globe:before{content:"\f0ac";color:#003D7C;}
+.contact .faicon.fa-address:before{content:"\f124";color:#003D7C;}
+.contact iframe{display:block; margin: 0 auto;}
+
+/***********************************
+	FEATURED - ARTICLES - HOMEPAGE
+************************************/	
+.nus-featured-articles{margin:40px 0;}
+.nus-featured-articles img{width:100%;}
+.nus-featured-articles .row > div{margin:0 0 20px 0;}
+
+@media screen and (max-width:767px) {
+	.nus-featured-articles{margin:0 0 40px 0;}
+	.nus-featured-articles .intro-image{text-align:center;}
+	.nus-featured-articles img{width:inherit;}
+}
+
+/***********************************
+	FEATURETTE
+***********************************/
+.featurette-heading{font-size:50px;}
+.featurette-divider {margin: 80px 0;}
+.featurette{vertical-align:middle;}
+.featurette-image{max-width:100%;}
+@media screen and (max-width:991px) {
+	.featurette{text-align:center;}
+}
+
+/**********************************
+	MASTHEAD
+**********************************/
+.nus-jumbotron{background:transparent;text-align:center;
+	border-radius:0;
+	-webkit-border-radius:0px; 
+	-moz-border-radius:0px;}
