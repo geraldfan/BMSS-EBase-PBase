@@ -167,7 +167,6 @@ def append_set_to_nested_list(formatted_cells, cells):
     return formatted_cells
 
 
-# TODO change method to use sqlalchemy
 def add_to_database(cells):
     db = "sqlite:///PBase.db"
 

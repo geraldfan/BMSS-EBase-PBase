@@ -17,7 +17,7 @@ Created on Thu Feb 25 14:44:13 2021
 import sqlite3
 
 import openpyxl
-from sqlalchemy import create_engine, MetaData, Table, Column, String, ForeignKey, ForeignKeyConstraint
+from sqlalchemy import create_engine, MetaData, Table, Column, String, ForeignKeyConstraint
 
 
 def read(file, first_col_id, last_col_id, data_ids, equipment):
@@ -72,7 +72,6 @@ def read(file, first_col_id, last_col_id, data_ids, equipment):
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(time_dict))
     formatted_cells = append_single_value_to_nested_list(formatted_cells, str(temperature_dict))
     formatted_cells = append_cells_to_single_nested_list(formatted_cells, str(data_dict))
-
 
     add_to_database(formatted_cells)
     add_to_settings(settings)
@@ -132,49 +131,6 @@ def create_experiment_date_and_time_dict(experimentDateAndTimeCells):
                        experimentDateAndTimeCells[1][0].value.strftime("%H:%M:%S"))
 
 
-def create_temperature_dict(odTemperatureCells, gfpTemperatureCells, rfpTemperatureCells):
-    temperature_dict = create_dict("OD", odTemperatureCells)
-    temperature_dict = add_to_dict(temperature_dict, "GFP", gfpTemperatureCells)
-    return add_to_dict(temperature_dict, "RFP", rfpTemperatureCells)
-
-
-def create_time_dict(odTimeCells, gfpTimeCells, rfpTimeCells):
-    odTime = []
-    odTime = append_time_to_list(odTime, odTimeCells)
-    gfpTime = []
-    gfpTime = append_time_to_list(gfpTime, gfpTimeCells)
-    rfpTime = []
-    rfpTime = generate_nested_list(rfpTime, rfpTimeCells)
-    rfpTime = append_time_to_list(rfpTime, rfpTimeCells)
-    time_dict = create_dict("OD", odTime)
-    time_dict = add_to_dict(time_dict, "GFP", gfpTime)
-    return add_to_dict(time_dict, "RFP", rfpTime)
-
-
-def create_data_dict(odCells, gfpCells, rfpCells):
-    odValues = []
-    odValues = generate_nested_list(odValues, odCells)
-    odValues = append_to_nested_list(odValues, odCells)
-    gfpValues = []
-    gfpValues = generate_nested_list(gfpValues, gfpCells)
-    gfpValues = append_to_nested_list(gfpValues, gfpCells)
-    rfpValues = []
-    rfpValues = generate_nested_list(rfpValues, rfpCells)
-    rfpValues = append_to_nested_list(rfpValues, rfpCells)
-    data_dict = create_dict("OD", odValues)
-    data_dict = add_to_dict(data_dict, "GFP", gfpValues)
-    return add_to_dict(data_dict, "RFP", rfpValues)
-
-
-def create_read_info_dict(readODWavelength, readGFPCells, readRFPCells):
-    read_info_dict = create_dict("OD", create_dict("Wavelength", extract_int_as_string(readODWavelength)))
-    gfp_dict = create_fp_dict(readGFPCells)
-    read_info_dict = add_to_dict(read_info_dict, "GFP", str(gfp_dict))
-    rfp_dict = create_fp_dict(readRFPCells)
-    read_info_dict = add_to_dict(read_info_dict, "RFP", str(rfp_dict))
-    return read_info_dict
-
-
 def add_to_read_dict(file, data_sheet, read_dict, key, first_row_id):
     read_id = ("A1", "B" + first_row_id)
     read_cells = get_cells(file, read_id, data_sheet)
@@ -190,17 +146,18 @@ def add_to_read_dict(file, data_sheet, read_dict, key, first_row_id):
                     isCompleted = True
     return read_dict
 
+
 def add_info_to_read_dict(read_dict, read_cells, i, j, key):
     if key == "OD" and "Wavelength" in read_cells[i][j].value:
         info_dict = {}
         info_dict["Wavelength"] = extract_int_as_string(read_cells[i][j].value)
         read_dict[key] = info_dict
-    if key =="GFP" or key == "RFP" and "Excitation" in read_cells[i][j].value:
+    if key == "GFP" or key == "RFP" and "Excitation" in read_cells[i][j].value:
         excitation_emissions = read_cells[i][j].value.split(",")
         info_dict = {}
         info_dict["Excitation"] = extract_int_as_string(excitation_emissions[0])
         info_dict["Emission"] = extract_int_as_string(excitation_emissions[1])
-        info_dict["Gain"] = extract_int_as_string(read_cells[i+1][j].value)
+        info_dict["Gain"] = extract_int_as_string(read_cells[i + 1][j].value)
         read_dict[key] = info_dict
 
 
@@ -211,7 +168,7 @@ def is_add_read_cell(read_cells, i, j, key):
         return False
     if key == "OD" and "Wavelength" in read_cells[i][j].value:
         return True
-    if (key =="GFP" or key == "RFP") and "Excitation" in read_cells[i][j].value:
+    if (key == "GFP" or key == "RFP") and "Excitation" in read_cells[i][j].value:
         return True
 
     return False
@@ -249,13 +206,6 @@ def create_wells_dict(wellCells, wellInfoCells):
 def create_shake_dict(procedureCells):
     shake_dict = create_dict("Orbital", procedureCells[6][0].value.replace("Orbital: ", ""))
     return add_to_dict(shake_dict, "Frequency", procedureCells[7][0].value.replace("Frequency: ", ""))
-
-
-def create_fp_dict(readFPCells):
-    excitation_emissions = readFPCells[0][0].value.split(",")
-    gfp_dict = create_dict("Excitation", extract_int_as_string(excitation_emissions[0]))
-    gfp_dict = add_to_dict(gfp_dict, "Emission", extract_int_as_string(excitation_emissions[1]))
-    return add_to_dict(gfp_dict, "Gain", extract_int_as_string(readFPCells[1][0].value))
 
 
 def get_cells(file, cellsId, sheet):
@@ -324,38 +274,9 @@ def append_cells_to_single_nested_list(formatted_cells, cells):
     return formatted_cells
 
 
-def append_values_to_nested_list(formatted_cells, cells):
-    for i in range(len(cells)):
-        formatted_cells[i].append(str(cells[i]))
-
-    return formatted_cells
-
-
-def append_time_to_nested_list(formatted_cells, cells):
-    for i in range(len(cells)):
-        for k in range(len(cells[0])):
-            formatted_cells[i].append(cells[i][k].value.strftime("%H:%M:%S"))
-
-    return formatted_cells
-
-
 def append_time_to_list(formatted_cells, cells):
     for i in range(len(cells)):
         formatted_cells.append(cells[i][0].value.strftime("%H:%M:%S"))
-
-    return formatted_cells
-
-
-def append_identifier_to_nested_list(formatted_cells, cells, identifier):
-    for i in range(len(cells)):
-        formatted_cells[i].append(identifier)
-
-    return formatted_cells
-
-
-def append_temperature_to_nested_list(formatted_cells, cells, temperature):
-    for i in range(len(cells)):
-        formatted_cells[i].append(temperature)
 
     return formatted_cells
 

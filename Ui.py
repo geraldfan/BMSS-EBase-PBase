@@ -1,7 +1,8 @@
 import tkinter as tk  # python 3
-from tkinter import font as tkfont, filedialog, BOTTOM, LEFT  # python 3
-import PBase
+from tkinter import font as tkfont, filedialog  # python 3
+
 import EBase
+import PBase
 
 
 class SampleApp(tk.Tk):
@@ -35,7 +36,7 @@ class SampleApp(tk.Tk):
         self.show_frame("StartPage")
 
     def show_frame(self, page_name):
-        '''Show a frame for the given page name'''
+        """Show a frame for the given page name"""
         frame = self.frames[page_name]
         frame.tkraise()
 
@@ -127,7 +128,7 @@ class EBasePage(tk.Frame):
                                  command=lambda: self.addBox(expList, firstRowList, lastRowList))
         addboxButton.grid(row=3, column=0)
 
-        nextButton = tk.Button(self, width=30, text="Next",
+        nextButton = tk.Button(self, width=30, text="Select file and Add to database",
                                command=lambda: self.file_select(controller, variable, ent_firstColId, ent_lastColId,
                                                                 ent_firstRowId, ent_lastRowId, expList,
                                                                 firstRowList, lastRowList))
